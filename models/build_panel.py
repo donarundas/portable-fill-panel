@@ -468,38 +468,73 @@ def line(name, x0, y0, x1, y1, m, parent, w=2.6):
     return o
 
 def build_mimic():
-    """Painted flow-mimic on the plate top; replaces the wide colour bands."""
+    """Painted flow-mimic on the plate top, drawn to the P&ID topology (BSD-PFS-001):
+    inlet legs QC → NV with the gauge tap UPSTREAM of the valve (the tap loops round the knob's left side so it reads the
+    supply, not the header); header NV-01/02/03 → NV-04/NV-05; fill line NV-04 → PI-04 tee → V-01 → QC-06 with the
+    QC-05 return joining it; booster out NV-05 → QC-04. A crossing that is not a connection is drawn with a 12 mm gap.
+    Checked with an orthographic top render (Cam_plate) and the GA-mm table in `mimic_report()`."""
     for o in list(bpy.data.objects):
-        if o.name.startswith('Band_') or o.name.startswith('lbl_') or o.name.startswith('mim_'): bpy.data.objects.remove(o, do_unlink=True)
-    mim = empty('Mimic'); lab = bpy.data.objects.get('Labels') or empty('Labels')
+        if o.name.startswith(('Band_', 'lbl_', 'mim_')) or o.name == 'Mimic': bpy.data.objects.remove(o, do_unlink=True)
+    mim = empty('Mimic'); mim.location.z = TABLE_H
+    lab = bpy.data.objects.get('Labels') or empty('Labels')
+    # inlet columns
     for i, (x, m) in enumerate(((60, 'o2'), (135, 'he'), (210, 'air'))):
-        line(f'mim_in{i}', x, 268, x, 206, M[m], mim);  arrow_head(f'mim_in{i}_a', x, 236, 90, M[m], mim)   # QC → NV (towards the back = +Blender Y)
-        line(f'mim_pi{i}', x, 165, x, 112, M[m], mim)                                                      # NV → gauge stub (pressure indication)
-        line(f'mim_hd{i}', x, 165, x, 150, M['mix'], mim)                                                   # NV → header
+        line(f'mim_in{i}', x, 268, x, 206, M[m], mim); arrow_head(f'mim_in{i}_a', x, 240, 90, M[m], mim)     # QC → NV (towards the back)
+        tx = x - 28                                                                                            # gauge tap: leg → round the knob → gauge
+        line(f'mim_tap{i}a', x, 222, tx, 222, M[m], mim, w=1.4); line(f'mim_tap{i}b', tx, 222, tx, 108, M[m], mim, w=1.4); line(f'mim_tap{i}c', tx, 108, x, 108, M[m], mim, w=1.4)
+        line(f'mim_hd{i}', x, 166, x, 150, M['mix'], mim)                                                     # NV outlet → header
     line('mim_header', 60, 150, 400, 150, M['mix'], mim, w=3.2)
-    for x in (100, 175, 260, 360): arrow_head(f'mim_header_a{x}', x, 150, 0, M['mix'], mim)
+    for x in (100, 175, 260, 350): arrow_head(f'mim_header_a{x}', x, 150, 0, M['mix'], mim)
     line('mim_to_nv04', 320, 150, 320, 166, M['mix'], mim); line('mim_to_nv05', 400, 150, 400, 166, M['mix'], mim)
+    # fill line
     line('mim_fill_a', 320, 204, 320, 250, M['mix'], mim, w=3.2); line('mim_fill_b', 320, 250, 435, 250, M['mix'], mim, w=3.2); line('mim_fill_c', 435, 250, 435, 272, M['mix'], mim, w=3.2)
-    for x in (350, 395): arrow_head(f'mim_fill_a{x}', x, 250, 0, M['mix'], mim)
+    for x in (340, 410): arrow_head(f'mim_fill_a{x}', x, 250, 0, M['mix'], mim)
     arrow_head('mim_fill_qc6', 435, 264, -90, M['mix'], mim)
-    line('mim_bst_a', 400, 204, 400, 262, M['mix'], mim); line('mim_bst_b', 400, 262, 285, 262, M['mix'], mim); line('mim_bst_c', 285, 262, 285, 272, M['mix'], mim)
-    arrow_head('mim_bst_a1', 340, 262, 180, M['mix'], mim); arrow_head('mim_bst_qc4', 285, 268, -90, M['mix'], mim)
-    line('mim_qc5', 360, 272, 360, 250, M['mix'], mim); arrow_head('mim_qc5_a', 360, 258, 90, M['mix'], mim)
-    line('mim_pi4', 372, 250, 372, 112, M['mix'], mim, w=1.6)
+    # PI-04 tap off the fill line up to the gauge stem; gap where it crosses the header
+    line('mim_pi4a', 376, 250, 376, 158, M['mix'], mim, w=1.6); line('mim_pi4b', 376, 142, 376, 112, M['mix'], mim, w=1.6)
+    line('mim_pi4c', 376, 112, 380, 112, M['mix'], mim, w=1.6); line('mim_pi4d', 380, 112, 380, 96, M['mix'], mim, w=1.6)
+    # booster loop; gaps where the out line crosses the fill line (x=400) and the QC-05 return (x=360)
+    line('mim_bst_a1', 400, 204, 400, 244, M['mix'], mim); line('mim_bst_a2', 400, 256, 400, 262, M['mix'], mim)
+    line('mim_bst_b1', 400, 262, 366, 262, M['mix'], mim); line('mim_bst_b2', 354, 262, 285, 262, M['mix'], mim); line('mim_bst_c', 285, 262, 285, 272, M['mix'], mim)
+    arrow_head('mim_bst_a1h', 320, 262, 180, M['mix'], mim); arrow_head('mim_bst_qc4', 285, 268, -90, M['mix'], mim)
+    line('mim_qc5', 360, 272, 360, 250, M['mix'], mim); arrow_head('mim_qc5_a', 360, 256, 90, M['mix'], mim)
     line('mim_v01', 425, 250, 425, 242, M['mix'], mim)
-    # line captions
-    def C(s, x, y, size=2.8, m='ink', rot=0):
-        t = text(f'lbl_{s}', s, size, P(x, y, PLATE_TOP + 0.3), M[m], parent=lab, extrude=0.2); t.rotation_euler = (0, 0, rot)
-    C('MANIFOLD  ≤300 bar', 230, 143); C('FILL LINE  200 bar', 378, 243); C('TO BOOSTER', 342, 257); C('FROM BOOSTER', 360, 281, 2.4); C('PRODUCT', 435, 281, 2.4)
-    # equipment tags, 5 mm, offset from the mimic lines
-    def L(s, x, y, size=5.0, align='CENTER'): text(f'lbl_{s}', s, size, P(x, y, PLATE_TOP + 0.3), M['ink'], parent=lab, extrude=0.25, align=align)
-    L('PORTABLE FILL STATION · MODULE A · O2 SERVICE — NO OIL · 200 bar FILL · PSV 220 bar', 230, 12, 4.6)
-    for tag, gas, x in (('PI-01', 'O2', 60), ('PI-02', 'He', 135), ('PI-03', 'AIR', 210)): L(f'{tag} {gas}', x + 40, 75, 4.2, 'LEFT')
-    L('PI-04 MASTER', 380, 122, 4.2)
-    for tag, gas, x in (('NV-01', 'O2', 60), ('NV-02', 'He', 135), ('NV-03', 'AIR', 210), ('NV-04', 'DIRECT', 320), ('NV-05', 'BOOST', 400)): L(f'{tag} {gas}', x + 22, 185, 4.2, 'LEFT')
-    L('V-01 BLEED', 425, 218, 3.6)
-    for tag, gas, x in (('QC-01', 'O2 IN', 60), ('QC-02', 'He IN', 135), ('QC-03', 'AIR IN', 210), ('QC-04', 'BST OUT', 285), ('QC-05', 'BST IN', 360), ('QC-06', 'PRODUCT', 435)): L(f'{tag} {gas}', x, 322 if x < 250 else 336, 3.8)
+    # line captions (3 mm) and equipment tags (4 mm), all placed clear of lines, knobs and neighbours — see mimic_report()
+    def T(s, x, y, size, align='CENTER', extrude=0.25): text(f'lbl_{s}', s, size, P(x, y, PLATE_TOP + 0.3), M['ink'], parent=lab, extrude=extrude, align=align)
+    T('MANIFOLD  ≤300 bar', 230, 143, 3.2); T('FILL LINE  200 bar', 352, 243, 3.2); T('TO BOOSTER', 302, 257, 2.8)
+    T('PORTABLE FILL STATION · MODULE A · O2 SERVICE — NO OIL · 200 bar FILL · PSV 220 bar', 230, 12, 4.6)
+    for tag, gas, x in (('PI-01', 'O2', 60), ('PI-02', 'He', 135), ('PI-03', 'AIR', 210)): T(f'{tag} {gas}', x, 120, 4.2)   # centred under the gauge
+    T('PI-04 MASTER', 402, 120, 4.2)
+    for tag, gas, x in (('NV-01', 'O2', 60), ('NV-02', 'He', 135), ('NV-03', 'AIR', 210), ('NV-04', 'DIRECT', 320), ('NV-05', 'BOOST', 400)): T(f'{tag} {gas}', x + 22, 185, 4.2, 'LEFT')
+    T('V-01 BLEED', 433, 207, 3.6)
+    for tag, gas, x in (('QC-01', 'O2 IN', 60), ('QC-02', 'He IN', 135), ('QC-03', 'AIR IN', 210), ('QC-04', 'BST OUT', 285), ('QC-05', 'BST IN', 360), ('QC-06', 'PRODUCT', 435)): T(f'{tag} {gas}', x, 322, 3.8)
     return 'mimic + labels ok'
+
+def mimic_report():
+    """Every label and mimic segment in GA millimetres next to the component centres — the check that caught pass 4's
+    hidden gauge labels and false junctions. Returns the text; also renders Cam_plate (orthographic, straight down)."""
+    from mathutils import Vector
+    bpy.context.view_layer.update()          # objects created with bpy.data keep an identity matrix_world until the depsgraph runs
+    def ga(v): return (round(v.x / MM + PLATE_W / 2), round(PLATE_D / 2 - v.y / MM))
+    rows = []
+    for o in sorted(bpy.data.objects, key=lambda o: o.name):
+        if o.name.startswith('lbl_') and o.type == 'FONT':
+            rows.append(f"LABEL {o.name[4:]:40.40s} GA={ga(o.matrix_world.translation)} {round(o.data.size/MM,1)}mm {o.data.align_x} w={round(o.dimensions.x/MM)}")
+        elif o.name.startswith('mim_') and o.type == 'MESH':
+            pts = [o.matrix_world @ Vector(c) for c in o.bound_box]
+            rows.append(f"LINE  {o.name:16s} x {round(min(p.x for p in pts)/MM+PLATE_W/2)}..{round(max(p.x for p in pts)/MM+PLATE_W/2)} y {round(PLATE_D/2-max(p.y for p in pts)/MM)}..{round(PLATE_D/2-min(p.y for p in pts)/MM)}")
+    sc = bpy.context.scene; cam = bpy.data.objects.get('Cam_plate')
+    if not cam:
+        cd = bpy.data.cameras.new('Cam_plate'); cd.type = 'ORTHO'; cd.ortho_scale = 0.56
+        cam = bpy.data.objects.new('Cam_plate', cd); sc.collection.objects.link(cam)
+    cam.location = (0.0, 0.0, TABLE_H + 1.5); cam.rotation_euler = (0, 0, 0)
+    old = (sc.camera, sc.render.resolution_x, sc.render.resolution_y, sc.render.filepath)
+    try:
+        sc.camera = cam; sc.render.resolution_x, sc.render.resolution_y = 2000, 1520
+        sc.render.filepath = f'{OUT_DIR}/renders/plate-ortho.png'; bpy.ops.render.render(write_still=True)
+    finally:
+        sc.camera, sc.render.resolution_x, sc.render.resolution_y, sc.render.filepath = old
+    return '\n'.join(rows)
 
 def industrial_cylinder(name, wx, wy, body_mat, shoulder_mat, parent, label=None):
     """47 L industrial cylinder: Ø229 × ~1.37 m body, shoulder, neck, valve with handwheel and side outlet. Returns the outlet world point (m)."""
@@ -682,4 +717,4 @@ def build_bench():
     reroute_whips(); reroute_fill_whip()
     return 'bench ok'
 
-_RUN.update(bench=build_bench, fillwhip=reroute_fill_whip)
+_RUN.update(bench=build_bench, fillwhip=reroute_fill_whip, report=mimic_report)

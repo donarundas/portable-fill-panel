@@ -192,7 +192,7 @@ const TAGS = {
   'PM-01_bleed_grp': ['PM-01 · V-11', 'O₂ cascade: 3 × 47 L, tee chain, bleed after the last tee, whip to QC-01'], 'PM-02_bleed_grp': ['PM-02 · V-21', 'He cascade: 2 × 47 L'], 'PM-03_bleed_grp': ['PM-03 · V-31', 'Air pigtail: 1 × 47 L bank or a scuba cylinder'],
 };
 const hint = document.querySelector('.toolbar .hint');
-new GLTFLoader().load('models/panel.glb?v=6', (g) => {   // bump ?v= with every export so browsers do not keep the previous model
+new GLTFLoader().load('models/panel.glb?v=7', (g) => {   // bump ?v= with every export so browsers do not keep the previous model
   const model = g.scene; model.scale.setScalar(100);
   model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material && o.material.transmission > 0) o.castShadow = false; } });
   ['Plate', 'Piping', 'Mimic', 'Labels', 'LidHinge', 'Cascade', 'FillWhip', 'Bench'].forEach(n => { nodes[n] = model.getObjectByName(n); });
