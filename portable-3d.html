@@ -156,7 +156,7 @@ ground.rotation.x = -Math.PI / 2; ground.position.y = -0.85; ground.receiveShado
 const grid = new THREE.GridHelper(300, 30, 0xc6ccd3, 0xd6dbe0); grid.position.y = -0.84; scene.add(grid);
 
 const PT = 12.9; // plate top, cm
-const VIEWS = { iso: { pos: [-62, 60, 96], tgt: [6, 10, 2] }, top: { pos: [0, 96, 0.5], tgt: [0, PT, 0] }, front: { pos: [0, 34, 104], tgt: [0, 12, 0] }, oper: { pos: [6, 58, 70], tgt: [0, PT, 2] } };
+const VIEWS = { iso: { pos: [-80, 78, 122], tgt: [4, 8, 0] }, top: { pos: [0, 110, 0.5], tgt: [0, PT, 0] }, front: { pos: [0, 36, 120], tgt: [0, 12, 0] }, oper: { pos: [8, 66, 82], tgt: [0, PT, 0] } };
 function setView(name) { const v = VIEWS[name]; camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update(); document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name))); }
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
 setView('iso');
