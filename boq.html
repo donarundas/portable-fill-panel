@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portable Fill Station BOQ</title>
+<style>
+  :root {
+    --page:#eef1f4; --page-text:#253242; --page-muted:#5b6b7d; --card:#ffffff; --rule:#d5dce3; --rule-strong:#b9c2cc;
+    --accent:#1d4ed8; --accent-soft:#e8eefc; --ok:#15803d; --ok-soft:#e6f4ea; --warn:#b45309; --warn-soft:#fdf1e3; --neutral-soft:#eef1f4; --ink:#1c2530;
+    --input-bg:#ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --rule-strong:#48546a; --accent:#7ea6ff; --accent-soft:#1f2a44; --ok:#4ade80; --ok-soft:#173224; --warn:#f0b35a; --warn-soft:#3a2a12; --neutral-soft:#262f3b; --ink:#dbe3ec; --input-bg:#161b22; }
+  }
+  :root[data-theme="dark"] { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --rule-strong:#48546a; --accent:#7ea6ff; --accent-soft:#1f2a44; --ok:#4ade80; --ok-soft:#173224; --warn:#f0b35a; --warn-soft:#3a2a12; --neutral-soft:#262f3b; --ink:#dbe3ec; --input-bg:#161b22; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--page-text); font: 14.5px/1.5 "Helvetica Neue", Arial, ui-sans-serif, sans-serif; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+  header.page { max-width: 1400px; margin: 0 auto; padding: 30px 24px 14px; display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+  header .head-text { flex: 1 1 560px; min-width: 0; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--page-muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  h1 { font-size: 26px; margin: 6px 0 4px; letter-spacing: -.4px; text-wrap: balance; }
+  header p { margin: 0; color: var(--page-muted); max-width: 78ch; }
+  .banner { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+  .banner .note { border: 1px solid var(--rule); background: var(--card); border-radius: 8px; padding: 9px 14px; font-size: 13px; color: var(--page-muted); }
+  .banner .note b { color: var(--page-text); }
+
+  .totals { max-width: 1400px; margin: 14px auto 0; padding: 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .tile { background: var(--card); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 14px; }
+  .tile .k { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--page-muted); font-weight: 600; }
+  .tile .v { font-size: 20px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .tile .s { font-size: 12px; color: var(--page-muted); }
+
+  .controls { max-width: 1400px; margin: 14px auto 0; padding: 0 24px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .controls label { font-size: 13px; color: var(--page-muted); display: inline-flex; gap: 6px; align-items: center; }
+  .controls select, .controls input[type="number"] { font: inherit; font-size: 13px; padding: 5px 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--input-bg); color: var(--page-text); }
+  .controls button { font: 600 13px/1 inherit; padding: 8px 13px; border: 1px solid var(--rule); background: var(--card); color: var(--page-text); border-radius: 8px; cursor: pointer; }
+  .controls button:hover { border-color: var(--accent); color: var(--accent); }
+  .controls button:focus-visible, .controls select:focus-visible, td input:focus-visible, td select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .controls .spacer { flex: 1; }
+  .controls .saved { font-size: 12.5px; color: var(--page-muted); min-width: 120px; text-align: right; }
+
+  .wrap { max-width: 1400px; margin: 12px auto 60px; padding: 0 24px; }
+  .tbl { overflow-x: auto; background: var(--card); border: 1px solid var(--rule); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 1360px; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--page-muted); font-weight: 600; position: sticky; top: 0; background: var(--card); z-index: 1; }
+  tr.section td { background: var(--neutral-soft); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--page-muted); border-top: 1px solid var(--rule-strong); }
+  tr.section td .dwg { float: right; font-weight: 500; letter-spacing: 0; text-transform: none; }
+  tr.subtotal td { font-weight: 600; color: var(--page-muted); background: var(--card); }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  td .tags { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; color: var(--page-muted); display: block; margin-top: 2px; }
+  td .spec { color: var(--page-muted); font-size: 12.5px; }
+  td input, td select { font: inherit; font-size: 13px; padding: 4px 6px; border: 1px solid var(--rule); border-radius: 5px; background: var(--input-bg); color: var(--page-text); width: 100%; }
+  td input[type="number"] { text-align: right; width: 108px; font-variant-numeric: tabular-nums; }
+  td input.lead { width: 64px; }
+  td select { min-width: 150px; max-width: 210px; }
+  td input.note { min-width: 160px; }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .03em; white-space: nowrap; }
+  .pill.rfq { background: var(--accent-soft); color: var(--accent); }
+  .pill.quoted { background: var(--warn-soft); color: var(--warn); }
+  .pill.ordered, .pill.received { background: var(--ok-soft); color: var(--ok); }
+  .pill.na { background: var(--neutral-soft); color: var(--page-muted); }
+  tr.dim td:not(.keep) { opacity: .55; }
+  .ref { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; color: var(--page-muted); white-space: nowrap; }
+  .foot { max-width: 1400px; margin: 0 auto; padding: 0 24px 40px; font-size: 12.5px; color: var(--page-muted); }
+  .foot strong { color: var(--page-text); }
+  @media (max-width: 720px) { .totals { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<header class="page">
+  <div class="head-text">
+    <div class="eyebrow">Portable fill station · bill of quantities · 2026-09-04</div>
+    <h1>Portable Fill Station BOQ</h1>
+    <p>Every part on drawings BSD-PFS-001, 002 and 003, with quantity, specification, the vendors asked, and the RFQ reference in each vendor's subject line. Type prices, lead times and status straight into the table as quotes arrive; the totals update as you type. Prices are in INR and exclude GST unless the toggle is on.</p>
+  </div>
+</header>
+<div class="banner"><div class="note" id="storeNote">Connecting to the shared store…</div></div>
+
+<div class="totals" id="totals"></div>
+
+<div class="controls">
+  <label>Vendor <select id="fVendor"><option value="">all</option></select></label>
+  <label>Status <select id="fStatus"><option value="">all</option><option>RFQ sent</option><option>Quoted</option><option>Ordered</option><option>Received</option><option>Not needed</option></select></label>
+  <label><input type="checkbox" id="gst" checked> include GST at <input type="number" id="gstRate" value="18" min="0" max="28" step="0.5" style="width:64px"> %</label>
+  <span class="spacer"></span>
+  <span class="saved" id="saved"></span>
+  <button type="button" id="csv" hidden>Download CSV</button>
+</div>
+
+<div class="wrap"><div class="tbl"><table id="boq">
+  <thead><tr>
+    <th style="min-width:250px">Item</th><th style="min-width:230px">Specification</th><th class="num">Qty</th><th>Unit</th>
+    <th>Vendor</th><th class="num">Unit price ₹</th><th class="num">Line ₹</th><th>Lead (days)</th><th>Status</th><th>RFQ</th><th>Note</th>
+  </tr></thead>
+  <tbody id="rows"></tbody>
+</table></div></div>
+
+<footer class="foot">Quantities follow the drawings as issued 2026-09-04: needle valves include the five panel valves, the fill-line bleed and the three cascade bleeds; check valves include the six pigtail checks; tees include the five cascade tees. Items marked <strong>Not needed</strong> are excluded from the totals. Drawn &amp; engineered by <strong>Donarun Das</strong> · fill-station.donarundas.com</footer>
+
+<script>
+(() => {
+'use strict';
+/* ---------- the bill: what the drawings call for ---------- */
+const V = { FAV:'FAV (Mumbai)', SWB:'Swagelok Bangalore', SWM:'Swagelok Bombay', HYD:'Hydroflex Pipe', WIKA:'WIKA India', YAS:'Yashtec / KELLER', USUN:'USUN', MAX:'Maximator India', CRYO:'Cryo Gas Engineers', PELI:'Peli / Pelican', CNF:'Case N Foam', AMZ:'Amazon.in listing', LOCAL:'Local machine shop', OWN:'Own stock', WEH:'WEH (comparison)' };
+const RFQ = { FAV:'PFS-2609-03', SWB:'PFS-2609-01', SWM:'PFS-2609-02', HYD:'PFS-2609-04', WIKA:'PFS-2609-05', YAS:'PFS-2609-06', WEH:'PFS-2609-07', USUN:'PFS-2609-08', CRYO:'PFS-2609-09', PELI:'PFS-2609-10', MAX:'PFS-2609-11', CNF:'PFS-2609-12' };
+const SECTIONS = [
+  { id:'A', title:'Panel valves', dwg:'BSD-PFS-001 · 002' },
+  { id:'B', title:'Fittings and tube', dwg:'BSD-PFS-001 · 002 · 003' },
+  { id:'C', title:'Instruments', dwg:'BSD-PFS-001' },
+  { id:'D', title:'Hoses and cylinder connections', dwg:'BSD-PFS-002' },
+  { id:'E', title:'Case and plate', dwg:'BSD-PFS-003' },
+  { id:'F', title:'Booster and drive', dwg:'BSD-PFS-001' },
+  { id:'G', title:'Cleaning and consumables', dwg:'assembly notes' },
+];
+const ITEMS = [
+  { id:'nv', s:'A', item:'Needle valve ¼ in, panel-mount, 316 SS', tags:'NV-01..05 · V-01 · V-11 · V-21 · V-31', spec:'FAV FNV/MF/HP/02 10 000 psi (stem type to confirm) or Swagelok SS-1RS4 regulating stem 344 bar', qty:9, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'cv', s:'A', item:'Check valve ¼ in NPT M×F, 6000 psi', tags:'CV-01..04 · CV-11..13 · CV-21..22 · CV-31', spec:'FAV FAVCV/MF/04 (≈10 psi crack, Viton) or Swagelok SS-CHS4-1 (1 psig)', qty:10, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'psv', s:'A', item:'Relief valve ¼ in, set 220 bar', tags:'PSV-01', spec:'Swagelok SS-4R3A5 + spring F (206–275 bar) or FAV FRV ¼ in; plus one spare spring', qty:1, unit:'ea', vendors:['SWB','SWM','FAV'] },
+  { id:'qcs', s:'A', item:'Quick coupling socket ¼ in NPT F, double-check', tags:'QC-01..06', spec:'FAV FDQRCO2, 316 SS, 6000 psi; seals swapped to FKM in-house', qty:6, unit:'ea', vendors:['FAV','WEH'] },
+  { id:'qcp', s:'A', item:'Quick coupling plug ¼ in NPT F', tags:'QC-01P..06P + 4 spares', spec:'FAV FDQRCO2 plug half', qty:10, unit:'ea', vendors:['FAV','WEH'] },
+  { id:'qcc', s:'A', item:'Dust caps for sockets and plugs', tags:'—', spec:'one set covering all halves', qty:1, unit:'set', vendors:['FAV'] },
+  { id:'tee', s:'B', item:'Union tee ¼ in OD', tags:'panel manifold ×8 · cascade chains ×5', spec:'316 SS, 6000 psi (FAV FCF/UT/4I or Swagelok SS-400-3)', qty:13, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'union', s:'B', item:'Straight union ¼ in OD', tags:'—', spec:'316 SS, 6000 psi', qty:10, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'elbow', s:'B', item:'Elbow union ¼ in OD', tags:'—', spec:'316 SS, 6000 psi', qty:10, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'mc', s:'B', item:'Male connector ¼ in OD × ¼ in NPT M', tags:'valve and gauge ports', spec:'316 SS, 6000 psi', qty:20, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'bhu', s:'B', item:'Bulkhead union ¼ in OD, tube × tube', tags:'VB-01 vent through the case wall', spec:'FAV FCF/BU/4I (MOQ 5) or Swagelok SS-400-61', qty:1, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'bha', s:'B', item:'Bulkhead adaptor ¼ in NPT M × F, through-plate', tags:'under QC-01..06', spec:'316 SS, 6000 psi; mounts the FDQRCO2 sockets through the 4 mm plate', qty:6, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'ga', s:'B', item:'Gauge adaptor ¼ in NPT M × G¼ F', tags:'PI-01..04', spec:'316 SS', qty:4, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'pi4a', s:'B', item:'Bulkhead adaptor for the digital gauge', tags:'PI-04', spec:'G¼ gauge through the 4 mm plate', qty:1, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'plug', s:'B', item:'Tube plug ¼ in OD', tags:'—', spec:'316 SS', qty:6, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'cap', s:'B', item:'Tube cap ¼ in OD', tags:'incl. 3 cascade chain end caps', spec:'316 SS', qty:9, unit:'ea', vendors:['FAV','SWB','SWM'] },
+  { id:'tube', s:'B', item:'Tube ¼ in OD × 0.065 in wall, 316/316L seamless', tags:'panel runs', spec:'ASTM A269, degreased before assembly', qty:6, unit:'m', vendors:['SWB','SWM','FAV'] },
+  { id:'pi', s:'C', item:'Supply gauge 63 mm, 0–400 bar, dry, oxygen version', tags:'PI-01 · PI-02 · PI-03', spec:'WIKA 232.50 NS 63, centre-back, G¼B, class 1.6, U-clamp bracket, "USE NO OIL" dial', qty:3, unit:'ea', vendors:['WIKA'] },
+  { id:'pi4', s:'C', item:'Digital master gauge 0–400 bar', tags:'PI-04', spec:'WIKA CPG1500 (oxygen option) or KELLER LEO5', qty:1, unit:'ea', vendors:['WIKA','YAS'] },
+  { id:'whip', s:'D', item:'Supply whip 1.5 m, ¼ in NPT M both ends', tags:'W-01 · W-02 · W-03', spec:'DN6 SS-braid, 400 bar WP, oxygen-clean', qty:3, unit:'ea', vendors:['HYD','FAV'] },
+  { id:'fwhip', s:'D', item:'Fill whip 1.5 m with DIN 232 handwheel and bleed screw', tags:'W-04', spec:'DN6 SS-braid, 400 bar WP, oxygen-clean', qty:1, unit:'ea', vendors:['HYD'] },
+  { id:'pig', s:'D', item:'Pigtail 0.6 m, ¼ in NPT M × IS 3224 cylinder end', tags:'P-11..13 (No. 3) · P-21..22 (No. 20) · P-31 (No. 19)', spec:'DN6 SS-braid, 400 bar WP, oxygen-clean; cylinder ends per gas', qty:6, unit:'ea', vendors:['HYD'] },
+  { id:'link', s:'D', item:'Link hose 0.4 m, ¼ in NPT M both ends', tags:'cascade chains', spec:'DN6 SS-braid, 400 bar WP, oxygen-clean', qty:3, unit:'ea', vendors:['HYD','FAV'] },
+  { id:'nut3', s:'D', item:'IS 3224 outlet No. 3 nut + nipple, G5/8 RH bullnose (oxygen)', tags:'incl. 1 spare', spec:'brass, ¼ in NPT M outlet, oxygen-clean', qty:4, unit:'set', vendors:['CRYO','HYD'] },
+  { id:'nut20', s:'D', item:'IS 3224 outlet No. 20 nut + nipple, G3/4 RH (helium)', tags:'incl. 1 spare', spec:'brass, female nut for the male valve outlet', qty:3, unit:'set', vendors:['CRYO','HYD'] },
+  { id:'nut19', s:'D', item:'IS 3224 outlet No. 19 nut + nipple, G7/8 RH (air)', tags:'incl. 1 spare', spec:'brass', qty:2, unit:'set', vendors:['CRYO','HYD'] },
+  { id:'case', s:'E', item:'Hard case, interior ≈ 470 × 360 × 195 mm', tags:'Pelican 1550 or Case N Foam EW/MAX', spec:'waterproof, one Ø11.5 vent hole in the back wall', qty:1, unit:'ea', vendors:['PELI','CNF','AMZ'] },
+  { id:'plate', s:'E', item:'Panel plate 460 × 350 × 4 mm aluminium', tags:'—', spec:'5052-H32 / 6061-T6, R10, anodised, laser-engraved, paint-filled bands', qty:1, unit:'ea', vendors:['LOCAL'] },
+  { id:'base', s:'E', item:'Base plate 440 × 330 × 3 mm aluminium', tags:'—', spec:'4 × M6 bosses', qty:1, unit:'ea', vendors:['LOCAL'] },
+  { id:'stand', s:'E', item:'Standoff Ø16 × 112 mm aluminium, M6 both ends', tags:'—', spec:'', qty:4, unit:'ea', vendors:['LOCAL'] },
+  { id:'fast', s:'E', item:'M6 × 12 A4 stainless cap screws with washers', tags:'—', spec:'', qty:8, unit:'ea', vendors:['LOCAL'] },
+  { id:'lid', s:'E', item:'Lid organiser', tags:'—', spec:'foam or nylon, pockets for 4 whips and the pigtail sets', qty:1, unit:'ea', vendors:['CNF','PELI','LOCAL'] },
+  { id:'bst', s:'F', item:'Oxygen booster', tags:'BST-01', spec:'USUN XBD30-OL with hoses, drive kit, seal kit; Maximator India as the local alternative', qty:1, unit:'ea', vendors:['USUN','MAX'] },
+  { id:'reg', s:'F', item:'Drive-gas regulator (scuba first stage) and drive cylinder', tags:'R-01', spec:'own equipment, intermediate pressure set ≈7 bar', qty:1, unit:'ea', vendors:['OWN'] },
+  { id:'lube', s:'G', item:'Oxygen-compatible lubricant', tags:'—', spec:'Krytox GPL 205 or Christo-Lube MCG 111, 57 g', qty:1, unit:'tube', vendors:['LOCAL'] },
+  { id:'oring', s:'G', item:'FKM O-ring kits for valves and couplings', tags:'—', spec:'per FAV / Swagelok part lists', qty:1, unit:'lot', vendors:['FAV','SWB'] },
+  { id:'clean', s:'G', item:'Cleaning consumables', tags:'—', spec:'lint-free wipes, degreaser, UV lamp, bags and caps', qty:1, unit:'lot', vendors:['LOCAL'] },
+];
+const STATUSES = ['RFQ sent', 'Quoted', 'Ordered', 'Received', 'Not needed'];
+const PILL = { 'RFQ sent':'rfq', 'Quoted':'quoted', 'Ordered':'ordered', 'Received':'received', 'Not needed':'na' };
+
+/* ---------- state: quote data per line, shared via db when available ---------- */
+const state = {};          // id → { vendor, price, lead, status, note, updatedAt }
+let db = null, downloads = null, unsub = null;
+const LS_KEY = 'pfs-boq-v1';
+const fmt = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
+const $ = (s) => document.querySelector(s);
+const rowsEl = $('#rows'), totalsEl = $('#totals'), savedEl = $('#saved'), noteEl = $('#storeNote');
+
+function defaults(it) { return { vendor: it.vendors[0], price: null, lead: null, status: it.vendors[0] === 'OWN' ? 'Not needed' : (RFQ[it.vendors[0]] ? 'RFQ sent' : 'RFQ sent'), note: '' }; }
+function rec(id) { const it = ITEMS.find(i => i.id === id); return Object.assign({}, defaults(it), state[id] || {}); }
+function lineTotal(it) { const r = rec(it.id); if (r.status === 'Not needed' || r.price == null) return null; return r.price * it.qty; }
+function gstFactor() { return $('#gst').checked ? 1 + (parseFloat($('#gstRate').value) || 0) / 100 : 1; }
+
+/* ---------- rendering ---------- */
+function render() {
+  const fv = $('#fVendor').value, fs = $('#fStatus').value;
+  rowsEl.textContent = '';
+  const g = gstFactor();
+  let grand = 0, priced = 0, quotedCount = 0;
+  const byVendor = {};
+  SECTIONS.forEach(sec => {
+    const items = ITEMS.filter(i => i.s === sec.id).filter(i => { const r = rec(i.id); return (!fv || r.vendor === fv) && (!fs || r.status === fs); });
+    if (!items.length) return;
+    const trS = document.createElement('tr'); trS.className = 'section';
+    trS.innerHTML = `<td colspan="11">${sec.id} · ${sec.title}<span class="dwg mono">${sec.dwg}</span></td>`;
+    rowsEl.appendChild(trS);
+    let sub = 0;
+    items.forEach(it => {
+      const r = rec(it.id); const lt = lineTotal(it);
+      if (lt != null) { sub += lt; priced++; byVendor[r.vendor] = (byVendor[r.vendor] || 0) + lt; }
+      if (r.status === 'Quoted' || r.status === 'Ordered' || r.status === 'Received') quotedCount++;
+      const tr = document.createElement('tr'); tr.dataset.id = it.id; if (r.status === 'Not needed') tr.className = 'dim';
+      const vendorOpts = it.vendors.map(v => `<option value="${v}" ${v === r.vendor ? 'selected' : ''}>${V[v]}</option>`).join('') + (it.vendors.includes(r.vendor) ? '' : `<option value="${r.vendor}" selected>${V[r.vendor] || r.vendor}</option>`);
+      const statusOpts = STATUSES.map(s => `<option ${s === r.status ? 'selected' : ''}>${s}</option>`).join('');
+      tr.innerHTML = `
+        <td class="keep"><div>${it.item}</div><span class="tags">${it.tags}</span></td>
+        <td><span class="spec">${it.spec}</span></td>
+        <td class="num mono">${it.qty}</td><td>${it.unit}</td>
+        <td><select data-f="vendor">${vendorOpts}</select></td>
+        <td class="num"><input type="number" min="0" step="1" data-f="price" value="${r.price ?? ''}" placeholder="—" aria-label="unit price"></td>
+        <td class="num mono">${lt == null ? '—' : fmt.format(lt * g)}</td>
+        <td><input type="number" class="lead" min="0" step="1" data-f="lead" value="${r.lead ?? ''}" placeholder="—" aria-label="lead time days"></td>
+        <td><select data-f="status" aria-label="status">${statusOpts}</select><div style="margin-top:4px"><span class="pill ${PILL[r.status]}">${r.status}</span></div></td>
+        <td><span class="ref">${RFQ[r.vendor] || '—'}</span></td>
+        <td><input type="text" class="note" data-f="note" value="${(r.note || '').replace(/"/g, '&quot;')}" placeholder="MOQ, validity, remarks" aria-label="note"></td>`;
+      rowsEl.appendChild(tr);
+    });
+    const trT = document.createElement('tr'); trT.className = 'subtotal';
+    trT.innerHTML = `<td colspan="6">Subtotal · ${sec.title}</td><td class="num mono">${sub ? fmt.format(sub * g) : '—'}</td><td colspan="4"></td>`;
+    rowsEl.appendChild(trT); grand += sub;
+  });
+  const vendorLines = Object.entries(byVendor).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([v, t]) => `${V[v] || v} ${fmt.format(t * g)}`).join(' · ');
+  totalsEl.innerHTML = `
+    <div class="tile"><div class="k">Total ${$('#gst').checked ? 'incl. GST' : 'ex GST'}</div><div class="v">₹ ${fmt.format(grand * g)}</div><div class="s">${priced} of ${ITEMS.length} lines priced</div></div>
+    <div class="tile"><div class="k">Ex GST</div><div class="v">₹ ${fmt.format(grand)}</div><div class="s">GST at ${$('#gstRate').value} % adds ₹ ${fmt.format(grand * (gstFactor() - 1))}</div></div>
+    <div class="tile"><div class="k">Quoted or ordered</div><div class="v">${quotedCount}</div><div class="s">lines with a vendor answer</div></div>
+    <div class="tile" style="grid-column: span 2"><div class="k">By vendor (priced lines)</div><div class="v" style="font-size:14px;font-weight:600;line-height:1.5">${vendorLines || 'no prices yet'}</div></div>`;
+}
+function fillVendorFilter() {
+  const sel = $('#fVendor'); const seen = new Set(ITEMS.flatMap(i => i.vendors));
+  [...seen].forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = V[v]; sel.appendChild(o); });
+}
+
+/* ---------- persistence ---------- */
+let saveTimers = {};
+function persist(id) {
+  const r = Object.assign({}, rec(id), { updatedAt: new Date().toISOString() });
+  state[id] = r;
+  clearTimeout(saveTimers[id]);
+  saveTimers[id] = setTimeout(async () => {
+    try {
+      if (db) { await db.doc('boq/' + id).set(r); savedEl.textContent = 'saved to shared store'; }
+      else { localStorage.setItem(LS_KEY, JSON.stringify(state)); savedEl.textContent = 'saved in this browser only'; }
+    } catch (e) { savedEl.textContent = 'save failed: ' + (e && e.code || 'error'); }
+    setTimeout(() => { savedEl.textContent = ''; }, 2500);
+  }, 400);
+}
+rowsEl.addEventListener('change', (e) => {
+  const el = e.target.closest('[data-f]'); if (!el) return;
+  const id = el.closest('tr').dataset.id, f = el.dataset.f;
+  const r = rec(id);
+  if (f === 'price' || f === 'lead') r[f] = el.value === '' ? null : Number(el.value);
+  else r[f] = el.value;
+  if (f === 'vendor' && r.vendor === 'OWN') r.status = 'Not needed';
+  state[id] = r; persist(id); render();
+});
+rowsEl.addEventListener('input', (e) => { const el = e.target.closest('[data-f="price"]'); if (!el) return; const id = el.closest('tr').dataset.id; const r = rec(id); r.price = el.value === '' ? null : Number(el.value); state[id] = r; persist(id); renderTotalsOnly(); });
+function renderTotalsOnly() { const active = document.activeElement; const id = active && active.closest('tr') ? active.closest('tr').dataset.id : null; const pos = active && active.selectionStart; render(); if (id) { const el = rowsEl.querySelector(`tr[data-id="${id}"] [data-f="price"]`); if (el) { el.focus(); try { el.setSelectionRange(pos, pos); } catch (_) {} } } }
+['#gst', '#gstRate', '#fVendor', '#fStatus'].forEach(s => $(s).addEventListener('change', render));
+$('#gstRate').addEventListener('input', render);
+
+async function boot() {
+  fillVendorFilter();
+  try { Object.assign(state, JSON.parse(localStorage.getItem(LS_KEY) || '{}')); } catch (_) {}
+  render();
+  if (!window.claude || !window.claude.use) { noteEl.innerHTML = '<b>Local copy.</b> Edits stay in this browser. Open the published artifact for the shared, live version.'; return; }
+  db = await claude.use('db');
+  if (!db) { noteEl.innerHTML = '<b>Shared store unavailable here.</b> Edits stay in this browser only.'; return; }
+  noteEl.innerHTML = '<b>Shared store connected.</b> Everyone who opens this page sees the same prices; the RFQ log and Claude can read them back.';
+  unsub = db.collection('boq').onSnapshot((snap) => {
+    snap.docs.forEach(d => { if (d.exists) state[d.id] = Object.assign({}, state[d.id] || {}, d.data()); });
+    render();
+  }, (err) => { noteEl.innerHTML = `<b>Live updates stopped</b> (${err.code}). Reload to reconnect; edits still save.`; });
+  downloads = await claude.use('downloads');
+  if (downloads) {
+    const btn = $('#csv'); btn.hidden = false;
+    btn.addEventListener('click', async () => {
+      const g = gstFactor();
+      const head = ['section', 'item', 'tags', 'spec', 'qty', 'unit', 'vendor', 'rfq', 'unit_price_inr', 'line_total_inr', 'lead_days', 'status', 'note'];
+      const lines = [head.join(',')].concat(ITEMS.map(it => { const r = rec(it.id); const lt = lineTotal(it); return [it.s, it.item, it.tags, it.spec, it.qty, it.unit, V[r.vendor] || r.vendor, RFQ[r.vendor] || '', r.price ?? '', lt == null ? '' : Math.round(lt * g), r.lead ?? '', r.status, r.note || ''].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','); }));
+      try { await downloads.save({ filename: 'portable-fill-station-boq.csv', data: lines.join('\n') }); } catch (_) { /* viewer declined */ }
+    });
+  }
+}
+boot();
+})();
+</script>
+</body>
+</html>

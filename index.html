@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Portable Fill Station P&amp;ID</title>
+<style>
+  :root {
+    --page: #eef1f4; --page-text: #253242; --page-muted: #5b6b7d;
+    --card: #ffffff; --rule: #d5dce3; --accent: #1d4ed8; --warn: #b45309;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --accent:#7ea6ff; --warn:#f0b35a; }
+  }
+  :root[data-theme="dark"] { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --accent:#7ea6ff; --warn:#f0b35a; }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--page-text); font: 15px/1.55 "Helvetica Neue", Arial, ui-sans-serif, sans-serif; }
+  header.page { max-width: 1180px; margin: 0 auto; padding: 34px 24px 18px; }
+  header.page { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  header.page .head-text { flex: 1 1 560px; min-width: 0; }
+  .nav-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 4px; }
+  .nav-row a, .print-btn { border: 1px solid var(--rule); background: var(--card); color: var(--page-text); padding: 8px 14px; border-radius: 8px; font: 600 12.5px/1 inherit; text-decoration: none; white-space: nowrap; cursor: pointer; }
+  .nav-row a:hover, .print-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .print-btn:focus-visible, .nav-row a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  header.page .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--page-muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  header.page h1 { font-size: 27px; margin: 6px 0 4px; letter-spacing: -.4px; text-wrap: balance; }
+  header.page p { margin: 0; color: var(--page-muted); max-width: 72ch; }
+
+  .sheet-wrap { max-width: 1660px; margin: 18px auto 0; padding: 0 24px; }
+  .sheet-scroll { overflow-x: auto; background: var(--card); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 1px 3px rgba(10,20,35,.08); }
+  .sheet-scroll svg { display: block; min-width: 1600px; width: 100%; height: auto; background: #fff; }
+  .rotate-hint { display: none; }
+  @media (orientation: portrait) and (hover: none) { .rotate-hint { display: block; max-width: 1660px; margin: 12px auto 0; padding: 10px 24px; font-size: 13px; color: var(--page-muted); text-align: center; } }
+
+  main.doc { max-width: 1180px; margin: 0 auto; padding: 26px 24px 80px; }
+  main.doc h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--page-muted); border-bottom: 1px solid var(--rule); padding-bottom: 8px; margin: 38px 0 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  main.doc p { max-width: 72ch; }
+  .works { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px 28px; }
+  .works section h3 { font-size: 15.5px; margin: 0 0 6px; }
+  .works section h3 .n { display: inline-block; min-width: 22px; color: var(--accent); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; }
+  .works section p { margin: 0; font-size: 13.8px; }
+  .tag { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.3px; white-space: nowrap; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.2px; }
+  .tbl-wrap { overflow-x: auto; }
+  th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--page-muted); font-weight: 600; }
+  td.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  ul.list, ol.list { font-size: 13.8px; padding-left: 22px; max-width: 80ch; }
+  ul.list li, ol.list li { margin-bottom: 8px; }
+  .refs { font-size: 13px; color: var(--page-muted); padding-left: 20px; }
+  .refs li { margin-bottom: 7px; }
+  .refs a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  .page-foot { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--page-muted); text-align: center; }
+  .page-foot strong { color: var(--page-text); font-weight: 600; }
+
+  .pid-tip { position: fixed; z-index: 50; pointer-events: none; max-width: 320px; padding: 10px 13px; border-radius: 9px; background: #1c2530; color: #eef2f6; font-size: 12.5px; line-height: 1.5; box-shadow: 0 6px 18px rgba(10,20,35,.35); opacity: 0; transition: opacity .1s; }
+  .pid-tip .tip-tag { display: block; margin-bottom: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; font-weight: 600; letter-spacing: .03em; color: #ffd08a; }
+
+  @page { size: A4 landscape; margin: 9mm; }
+  @media print {
+    body { background: #fff; }
+    header.page, .rotate-hint, .pid-tip { display: none; }
+    .sheet-wrap { max-width: none; margin: 0; padding: 0; }
+    .sheet-scroll { border: none; box-shadow: none; border-radius: 0; overflow: visible; }
+    .sheet-scroll svg { min-width: 0; width: auto; height: 186mm; margin: 0 auto; }
+    main.doc { break-before: page; max-width: none; padding: 0; column-count: 2; column-gap: 26px; }
+    main.doc h2 { margin: 4px 0 4px; break-after: avoid; }
+    .works { display: block; }
+    .works section { break-inside: avoid; margin-bottom: 5px; }
+    .works section h3 { font-size: 11.5px; margin-bottom: 3px; }
+    .works section p { font-size: 9px; line-height: 1.36; }
+    table { font-size: 8.3px; }
+    th, td { padding: 1.5px 6px 1.5px 0; }
+    ul.list, ol.list, .refs { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+<header class="page">
+  <div class="head-text">
+  <div class="eyebrow">BSD-PFS-001 · REV A · 2026-09-04 · Pass 3 of 3 — final 2D · supersedes SK-A</div>
+  <h1>Portable Fill Station — Module A fill panel P&amp;ID</h1>
+  <p>A partial-pressure decant and blending panel in a Pelican 1550. Three labelled quick couplings bring in an O₂ cascade, a He cascade and an air cylinder; a common manifold feeds either the fill line directly or an external USUN XBD30-OL booster in its own case. Fill zone 200 bar, relief at 220 bar, bleed valve before the product coupling. Whole panel oxygen-service.</p>
+  </div>
+  <div class="nav-row">
+    <a href="https://fill-station.donarundas.com/">← Station P&amp;ID</a>
+    <a href="portable-cascade-pid.html">Cascade P&amp;ID (002)</a>
+    <a href="portable-pid-sketch.html">SK-A sketch</a>
+    <a href="portable-ga.html">GA drawing (003) →</a>
+    <a href="portable-3d.html">3D</a>
+    <a href="boq.html">BOQ</a>
+    <a href="concept.html">Concept &amp; sourcing</a>
+    <button class="print-btn" type="button" onclick="window.print()">Print / PDF</button>
+  </div>
+</header>
+
+<div class="sheet-wrap">
+  <div class="sheet-scroll"><svg id="pid" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1064" role="img" aria-label="Process and instrumentation diagram of the portable fill panel: three labelled quick-coupled inlets each with supply gauge, needle valve and check valve into a common manifold; a direct or booster selector of two needle valves; an external booster loop; and a 200 bar fill line with digital master gauge, 220 bar relief venting through a bulkhead, and the product coupling"></svg></div>
+</div>
+<p class="rotate-hint">Rotate your phone to landscape to read the sheet. Hover or tap a symbol for its duty.</p>
+
+<main class="doc">
+  <h2>How a fill works</h2>
+  <div class="works">
+    <section><h3><span class="n">1</span>Connect and check</h3>
+      <p>All needle valves closed. Supplies mate on their labelled couplings <span class="tag">QC-01 / 02 / 03</span> pressure-free — match the colour band on the whip to the band on the port. The couplings are not keyed, so the label is the check. Read <span class="tag">PI-01..03</span>. Connect the fill cylinder to <span class="tag">QC-06</span> through the DIN whip and open its valve: <span class="tag">PI-04</span> now reads the cylinder.</p></section>
+    <section><h3><span class="n">2</span>Direct decant</h3>
+      <p><span class="tag">NV-04 DIRECT</span> open, <span class="tag">NV-05</span> shut. Meter O₂ on <span class="tag">NV-01</span> while watching <span class="tag">PI-04</span> to the target partial pressure; shut. Then He on <span class="tag">NV-02</span>, then air top-up on <span class="tag">NV-03</span>. <span class="tag">CV-01..03</span> stop the higher-pressure supply backing into the others. Cascade rule: one supply cylinder valve open at a time, lowest pressure first.</p></section>
+    <section><h3><span class="n">3</span>Booster mode</h3>
+      <p>When the supply is at or below cylinder pressure: shut <span class="tag">NV-04</span>, open <span class="tag">NV-05</span>, run <span class="tag">BST-01</span> on drive gas from a scuba first stage set near 7 bar. Gas leaves through <span class="tag">QC-04</span>, returns boosted through <span class="tag">QC-05</span> and <span class="tag">CV-04</span> into the fill line. Stop at target. At 7 bar drive the 30:1 booster stalls below the 220 bar relief; <span class="tag">PSV-01</span> is the last resort, not the stop.</p></section>
+    <section><h3><span class="n">4</span>Finish and disconnect</h3>
+      <p>Shut the cylinder valve and bleed the whip at its DIN adaptor. Open <span class="tag">NV-04</span> and the fill-line bleed <span class="tag">V-01</span> to empty the panel through <span class="tag">VB-01</span>, then shut everything. Then bleed each inlet leg by opening its needle valve with <span class="tag">NV-04</span> and <span class="tag">V-01</span> open, and part the couplings. Nothing is mated or parted under pressure; the bleed does the venting, not the coupling.</p></section>
+    <section><h3><span class="n">5</span>Analyse and label</h3>
+      <p>Analyse O₂ and He at the cylinder valve after the mix settles, then label the cylinder. There is no inline analyser on this revision; the analyser travels in its own case.</p></section>
+  </div>
+
+  <h2>Component schedule</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Tag</th><th>Item</th><th>Class / rating</th><th>Qty</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">QC-01 · 02 · 03</td><td>Inlet quick couplings on ¼ in NPT bulkhead adaptors; ports labelled and colour-banded O₂ / He / AIR, not keyed</td><td>FAV FDQRCO2 double-check poppet coupling · ¼ in NPT female both halves · 316 SS · 6000 psi · standard part, seals swapped to FKM and cleaned in-house. Decided 2026-09-04; FAV to confirm gas-tightness at 300 bar, seal materials and locking mechanism <b>[CONFIRM]</b></td><td class="mono">3</td></tr>
+      <tr><td class="mono">QC-04 · 05 · 06</td><td>Booster suction, booster return, product — same coupling, labelled</td><td>as above</td><td class="mono">3</td></tr>
+      <tr><td class="mono">PI-01 · 02 · 03</td><td>Supply gauges, panel-mount</td><td>63 mm · 0–400 bar · class 1.6 · dry · WIKA 232.50 NS 63 centre-back mount with the "oil- and grease-free for oxygen" option and a custom "USE NO OIL" dial. WIKA's steady-pressure limit is ¾ FS = 300 bar, so a 300 bar air supply sits at the limit</td><td class="mono">3</td></tr>
+      <tr><td class="mono">PI-04</td><td>Master blending gauge, fill line</td><td>digital 0–400 bar · WIKA CPG1500 with the factory oxygen option, or Keller LEO5 0–400 bar (±0.4 bar; no factory O₂ option). WIKA CPG500 fails the spec; Divesoft makes no pressure gauge</td><td class="mono">1</td></tr>
+      <tr><td class="mono">NV-01 · 02 · 03</td><td>Supply needle valves — isolate and meter</td><td>¼ in · 316 SS · regulating stem · panel-mount · Swagelok SS-1RS4, 344 bar (5000 psig) — accepted 2026-09-04 against a 300 bar maximum supply; FAV FNV/MF/HP/02 (10 000 psi, panel nut, plain stem) as the alternative. Standard parts, cleaned in-house per note 6</td><td class="mono">3</td></tr>
+      <tr><td class="mono">NV-04 · 05</td><td>Selector needle valves — DIRECT / TO BOOSTER</td><td>as above</td><td class="mono">2</td></tr>
+      <tr><td class="mono">CV-01 · 02 · 03</td><td>Inlet check valves</td><td>¼ in · 316 SS · 6000 psi · Swagelok SS-CHS4-1 (1 psig crack, FKM O-ring as standard) or FAV FAVCV/MF/04 (Viton) · cleaned in-house</td><td class="mono">3</td></tr>
+      <tr><td class="mono">CV-04</td><td>Booster-return check valve</td><td>as above</td><td class="mono">1</td></tr>
+      <tr><td class="mono">PSV-01</td><td>Relief valve, fill line</td><td>¼ in · 316 SS · Swagelok SS-4R3A5 with spring F (206–275 bar) set 220 bar · FKM seal as standard · proportional relief, not a certified safety valve · discharges via VB-01</td><td class="mono">1</td></tr>
+      <tr><td class="mono">V-01</td><td>Fill-line bleed valve, before QC-06</td><td>¼ in · 316 SS · needle, same class as NV-01..05 · cleaned in-house · discharges via VB-01</td><td class="mono">1</td></tr>
+      <tr><td class="mono">VB-01</td><td>Vent bulkhead through the case wall — PSV-01 and V-01 discharge</td><td>¼ in bulkhead union · deflector outside · O₂-cleaned</td><td class="mono">1</td></tr>
+      <tr><td class="mono">—</td><td>Tube and fittings</td><td>¼ in × 0.065 in wall 316 SS · Swagelok / FAV fittings · degreased before assembly</td><td class="mono">—</td></tr>
+      <tr><td class="mono">—</td><td>Case and plate</td><td>Pelican 1550 (int. 47.3 × 36.0 × 19.6 cm, body depth 14.9 cm, 4.8 kg; ≈₹42 000 on Amazon.in, Indian MAX / Unicase equivalents ≈₹7 000) · 3–4 mm anodised Al plate 30 mm below the rim, engraved, gas colour bands</td><td class="mono">1</td></tr>
+      <tr><td class="mono">PM-01 · 02 · 03</td><td>Cascade pigtail manifolds (O₂ ×3, He ×2, air ×1) — separate drawing</td><td>see BSD-PFS-002: IS 3224 pigtails with check valves into a chain of ¼ in tees, one bleed, outlet whip to the panel</td><td class="mono">3</td></tr>
+      <tr><td class="mono">W-01..04</td><td>Whips: 3 supply, 1 fill</td><td>1.5 m HP hose · DIN 232 cylinder end (fill whip with bleed screw) · QC panel end · O₂-clean</td><td class="mono">4</td></tr>
+      <tr><td class="mono">BST-01</td><td>Gas booster, external, own Pelican</td><td>USUN XBD30-OL · 30:1 · drive ≤8 bar · inlet ≥30 bar · max out ≈240 bar · O₂-cleaned · ≈31 × 12 × 13 cm · no Indian dealer. Local alternative: Maximator India (Navi Mumbai) rebreather oxygen booster, DLE series O₂-rated to 350 bar</td><td class="mono">1</td></tr>
+      <tr><td class="mono">R-01</td><td>Drive-gas regulator</td><td>scuba first stage on a drive cylinder, intermediate pressure set ≈7 bar</td><td class="mono">1</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Set points and pressure classes</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Section</th><th>Working</th><th>Protection</th><th>Rating</th></tr></thead>
+    <tbody>
+      <tr><td>Supplies (external)</td><td class="mono">O₂ 150 (147) · He 150–200 · air 232 (300) bar</td><td>cylinder valves</td><td class="mono">—</td></tr>
+      <tr><td>Inlet legs, common manifold, booster loop</td><td class="mono">≤300 bar (source-limited)</td><td>none needed — cannot exceed supply</td><td class="mono">414 bar</td></tr>
+      <tr><td>Fill line, downstream of NV-04 and CV-04</td><td class="mono">200 bar fill</td><td class="mono">PSV-01 220 bar → VB-01</td><td class="mono">414 bar</td></tr>
+      <tr><td>BST-01 drive</td><td class="mono">≈7 bar via R-01</td><td>stall ≈ 30 × drive + inlet term, held below 220 bar <b>[CONFIRM curve]</b></td><td class="mono">8 bar max</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Decisions locked 2026-09-04</h2>
+  <ol class="list">
+    <li>Fill zone 200 bar, PSV-01 set 220 bar.</li>
+    <li>One keyed inlet per gas; the cascade is an external pigtail manifold on the cylinders.</li>
+    <li>One fill-line bleed <span class="tag">V-01</span> just before <span class="tag">QC-06</span> depressurises the whole panel, inlet legs included, through the open needle valves and check valves. The fill whip bleeds at its DIN adaptor; each cascade chain has a bleed after its last tee. The couplings therefore need no vent of their own (revised at review).</li>
+    <li>Booster USUN XBD30-OL, in its own Pelican case.</li>
+    <li>Pelican 1550 holds the panel only. Booster and analyser each travel in their own case.</li>
+    <li>Master gauge digital.</li>
+    <li>Inline analyser module and diver gas panel removed from scope. The analysis port shown on SK-A is deleted.</li>
+    <li>Needle valves rated 344 bar (Swagelok SS-1RS4 class) accepted against the 300 bar maximum supply; every other component stays ≥414 bar.</li>
+    <li>Standard Swagelok or FAV parts, oxygen-cleaned in-house with FKM/PTFE seals and Krytox, instead of factory SC-11 oxygen variants.</li>
+    <li>Quick couplings: FAV FDQRCO2 double-check couplings, not keyed, on ¼ in NPT bulkhead adaptors; ports labelled and colour-banded. The WEH quote is kept only as a comparison.</li>
+  </ol>
+
+  <h2>Confirm before purchase</h2>
+  <ul class="list">
+    <li>FAV FDQRCO2: gas service and leak-tightness at 300 bar with helium, seal materials (FKM or PTFE), poppet spring material, locking mechanism, cycle life, and the rule for mating and parting (we bleed to zero first). Fallback if it fails: DIN 477 handwheels.</li>
+    <li><b>In-house oxygen-cleaning procedure:</b> standard Swagelok and FAV parts arrive with hydrocarbon lubricant. Each valve is disassembled, degreased, fitted with FKM or PTFE seals (aftermarket Viton where an O-ring exists), re-lubricated with Krytox or Christo-Lube and UV-inspected before assembly. Write the procedure down before the first oxygen fill. Also whether Monel or brass trim is preferable at the throttling points.</li>
+    <li>PSV-01 spring range at 220 bar and relief capacity against the XBD30-OL's flow.</li>
+    <li>XBD30-OL stall-pressure curve, to fix the R-01 set point that keeps stall below 220 bar.</li>
+    <li>Pelican 1550 depth against the gauge and needle-valve stack (cardboard mock-up), see the 3D arrangement.</li>
+    <li>Whip hose O₂ rating at 300 bar (Hydroflex Pipe, Ahmedabad, lists 400 bar DN6 assemblies but not oxygen). Cylinder outlets on the supplier's actual cylinders: IS 3224 No. 3 (O₂), No. 20 (He), No. 19 (air) assumed.</li>
+  </ul>
+
+  <h2>References</h2>
+  <ul class="refs">
+    <li><a href="https://www.diverightinscuba.com/xbd30-ol-booster-pump.html" target="_blank" rel="noopener">USUN XBD30-OL</a> and <a href="https://www.diverightinscuba.com/usun-xb30-ol-booster-pump.html" target="_blank" rel="noopener">XB30-OL specification</a> — 30:1, 8 bar max drive, 30 bar minimum inlet, 240 bar max outlet, O₂-cleaned, ≈31 × 12 × 13 cm.</li>
+    <li><a href="https://www.pelican.com/us/en/product/cases/1550" target="_blank" rel="noopener">Pelican 1550</a> — interior 18.63 × 14.18 × 7.72 in, lid depth 1.75 in, bottom depth 5.87 in, 10.58 lb.</li>
+    <li><a href="https://www.weh.com/media/downloads/brief-overview/gas-brief-overview-en.pdf" target="_blank" rel="noopener">WEH gas quick connectors</a> — TW17 350 bar (oxygen), TW117 450 bar. <a href="https://www.staubli.com/content/dam/fcs/brochures/products/rbl/rbl-all-fluids-stainless-steel-couplings-staubli-en.pdf" target="_blank" rel="noopener">Stäubli RBL</a> — 300–450 bar by size.</li>
+    <li><a href="https://www.swagelok.com/downloads/webcatalogs/en/ms-01-168.pdf" target="_blank" rel="noopener">Swagelok N-series needle valves</a> · <a href="https://www.swagelok.com/downloads/webcatalogs/EN/MS-01-176.PDF" target="_blank" rel="noopener">CH check valves</a> · <a href="https://www.swagelok.com/downloads/webcatalogs/en/MS-01-141.PDF" target="_blank" rel="noopener">R3A/R4 relief valves</a> — 6000 psig (413 bar).</li>
+    <li><a href="https://www.divegearexpress.com/dgx-x-30-gas-booster" target="_blank" rel="noopener">Drive gas from a scuba first stage</a> — the standard expedition arrangement.</li>
+  </ul>
+
+  <footer class="page-foot">Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026 · BSD-PFS-001 REV A — for fabrication review</footer>
+</main>
+
+<script>
+(() => {
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('pid');
+const INK = '#1c2530', MUTED = '#5b6b7d', RED = '#b91c1c';
+const CLS = {
+  hp:  { stroke:'#1d4ed8' }, o2:  { stroke:'#15803d' }, he:  { stroke:'#8a5a2b' },
+  mix: { stroke:'#1c2530' }, drv: { stroke:'#c2700d', dash:'7 5' },
+  vnt: { stroke:'#8b93a1', dash:'5 5' }, sig: { stroke:'#7c8794', dash:'2 4' },
+};
+
+function el(name, attrs = {}, parent = svg) {
+  const n = document.createElementNS(NS, name);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  parent.appendChild(n);
+  return n;
+}
+function grp(title) { const g = el('g'); if (title) { g.setAttribute('data-tip', title); g.style.cursor = 'help'; } return g; }
+function pts2d(pts) { return 'M' + pts.map(p => p.join(',')).join(' L'); }
+function pipe(pts, kind, w = 2.4, parent = svg) {
+  const c = CLS[kind] || { stroke: INK };
+  const a = { d: pts2d(pts), fill:'none', stroke:c.stroke, 'stroke-width':w, 'stroke-linejoin':'round' };
+  if (c.dash) a['stroke-dasharray'] = c.dash;
+  return el('path', a, parent);
+}
+function arrow(x, y, dir, color, parent = svg) {
+  const s = 7;
+  const d = { r:[[x-s,y-s],[x+s,y],[x-s,y+s]], l:[[x+s,y-s],[x-s,y],[x+s,y+s]],
+              u:[[x-s,y+s],[x,y-s],[x+s,y+s]], d:[[x-s,y-s],[x,y+s],[x+s,y-s]] }[dir];
+  el('path', { d: pts2d(d)+'Z', fill: color, stroke:'none' }, parent);
+}
+function label(x, y, str, o = {}) {
+  const t = el('text', {
+    x, y, fill: o.color || INK, 'font-size': o.size || 11.5, 'text-anchor': o.anchor || 'middle',
+    'font-family': o.mono ? 'ui-monospace,Menlo,monospace' : 'Helvetica Neue,Arial,sans-serif',
+    'font-weight': o.weight || (o.mono ? 500 : 600), 'letter-spacing': o.ls || (o.mono ? '0' : '.04em'),
+  }, o.parent || svg);
+  t.textContent = str; return t;
+}
+
+/* ---------- symbols — same family as BSD-PID-001 ---------- */
+function valve(x, y, orient, kind, tag, name, opts = {}) {
+  const g = grp(name || tag); const c = (CLS[kind]||{stroke:INK}).stroke; const s = 9;
+  const shape = orient === 'h'
+    ? `M${x-s},${y-s} L${x},${y} L${x-s},${y+s} Z M${x+s},${y-s} L${x},${y} L${x+s},${y+s} Z`
+    : `M${x-s},${y-s} L${x},${y} L${x+s},${y-s} Z M${x-s},${y+s} L${x},${y} L${x+s},${y+s} Z`;
+  el('path', { d: shape, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+  if (opts.needle) {
+    const st = orient === 'h' ? [[x, y],[x, y-16],[x-5, y-16],[x+5, y-16]] : [[x, y],[x-16, y],[x-16, y-5],[x-16, y+5]];
+    el('path', { d:`M${st[0]} L${st[1]}`, stroke:c, 'stroke-width':2 }, g);
+    el('path', { d:`M${st[2]} L${st[3]}`, stroke:c, 'stroke-width':2 }, g);
+  }
+  if (tag) {
+    if (orient === 'v') label(x + 15, y + (opts.tagDy ?? 4), tag, { size:9.5, mono:true, anchor:'start', parent:g });
+    else label(x, y + (opts.tagDy ?? 24), tag, { size:9.5, mono:true, parent:g });
+  }
+  if (opts.sub) {
+    if (orient === 'v') label(x + 15, y + (opts.tagDy ?? 4) + 11, opts.sub, { size:8.5, color:MUTED, anchor:'start', parent:g });
+    else label(x, y + (opts.tagDy ?? 24) + 11, opts.sub, { size:8.5, color:MUTED, parent:g });
+  }
+  return g;
+}
+function checkV(x, y, orient, kind, dir = 1, tag, name) {
+  const g = grp(name || (tag ? `${tag} — check valve (non-return)` : 'Check valve')); const c = (CLS[kind]||{stroke:INK}).stroke; const s = 8;
+  if (orient === 'h') {
+    const x0 = x - dir*s, x1 = x + dir*s;
+    el('path', { d:`M${x0},${y-s} L${x1},${y} L${x0},${y+s} Z`, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+    el('path', { d:`M${x1},${y-s-1} L${x1},${y+s+1}`, stroke:c, 'stroke-width':2.6 }, g);
+    if (tag) label(x, y + 22, tag, { size:9, mono:true, parent:g });
+  } else {
+    const y0 = y - dir*s, y1 = y + dir*s;
+    el('path', { d:`M${x-s},${y0} L${x},${y1} L${x+s},${y0} Z`, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+    el('path', { d:`M${x-s-1},${y1} L${x+s+1},${y1}`, stroke:c, 'stroke-width':2.6 }, g);
+    if (tag) label(x + 14, y + 4, tag, { size:9, mono:true, anchor:'start', parent:g });
+  }
+  return g;
+}
+function psvUp(x, y, kind, tag, set) { // legend only: sits on a line, discharges up
+  const g = grp(`${tag || 'PSV'} relief valve`); const c = (CLS[kind]||{stroke:INK}).stroke;
+  el('path', { d:`M${x},${y} L${x},${y-12}`, stroke:c, 'stroke-width':2 }, g);
+  el('path', { d:`M${x-8},${y-12} L${x+8},${y-12} L${x},${y-26} Z`, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+  el('path', { d:`M${x},${y-26} l4,-4 l-8,-4 l8,-4 l-8,-4 l4,-4`, fill:'none', stroke:c, 'stroke-width':1.8 }, g);
+  el('path', { d:`M${x},${y-46} L${x},${y-54}`, stroke:CLS.vnt.stroke, 'stroke-width':1.8, 'stroke-dasharray':'4 4' }, g);
+  arrow(x, y-60, 'u', CLS.vnt.stroke, g);
+  return g;
+}
+function psvDown(x, y, kind, tag, set, name) { // sits ON a line point, discharges DOWN; caller continues the vent from (x, y+46)
+  const g = grp(name || `${tag} relief valve — set ${set}`); const c = (CLS[kind]||{stroke:INK}).stroke;
+  el('path', { d:`M${x},${y} L${x},${y+12}`, stroke:c, 'stroke-width':2 }, g);
+  el('path', { d:`M${x-8},${y+12} L${x+8},${y+12} L${x},${y+26} Z`, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+  el('path', { d:`M${x},${y+26} l4,4 l-8,4 l8,4 l-8,4 l4,4`, fill:'none', stroke:c, 'stroke-width':1.8 }, g);
+  label(x + 14, y + 22, tag, { size:9.5, mono:true, anchor:'start', parent:g });
+  label(x + 14, y + 33, set, { size:8.5, mono:true, anchor:'start', color:MUTED, parent:g });
+  return g;
+}
+function ventBulkhead(x, y, name) { // vent line passes through the case wall
+  const g = grp(name || 'Vent bulkhead'); const c = CLS.vnt.stroke;
+  el('rect', { x:x-8, y:y-6, width:16, height:12, rx:2, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+  el('path', { d:`M${x-4},${y-6} L${x-4},${y+6} M${x+4},${y-6} L${x+4},${y+6}`, stroke:c, 'stroke-width':1.4 }, g);
+  return g;
+}
+function regV(x, y, kind, tag, set, name) { // regulator on a vertical line, dome to the right
+  const g = grp(name || `${tag} regulator`); const c = (CLS[kind]||{stroke:INK}).stroke; const s = 8;
+  el('path', { d:`M${x-s},${y-s} L${x},${y} L${x+s},${y-s} Z M${x-s},${y+s} L${x},${y} L${x+s},${y+s} Z`, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+  el('path', { d:`M${x},${y} L${x+14},${y}`, stroke:c, 'stroke-width':2 }, g);
+  el('path', { d:`M${x+14},${y-9} A7,9 0 0 1 ${x+14},${y+9} Z`, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+  if (tag) label(x - 14, y + 4, tag, { size:9.5, mono:true, anchor:'end', parent:g });
+  if (set) label(x - 14, y + 15, set, { size:8.5, mono:true, anchor:'end', color:MUTED, parent:g });
+  return g;
+}
+function inst(cx, cy, l1, l2, leadTo, note, tip) {
+  const g = grp(tip || note || `${l1}-${l2}`);
+  if (leadTo) el('path', { d:`M${cx},${cy} L${leadTo[0]},${leadTo[1]}`, stroke:CLS.sig.stroke, 'stroke-width':1.4, 'stroke-dasharray':'2 4' }, g);
+  el('circle', { cx, cy, r:15, fill:'#fff', stroke:INK, 'stroke-width':1.8 }, g);
+  label(cx, cy - 2, l1, { size:9.5, mono:true, parent:g });
+  label(cx, cy + 9, l2, { size:9.5, mono:true, parent:g });
+  if (note) label(cx, cy - 22, note, { size:8.5, color:MUTED, parent:g });
+  return g;
+}
+function cyl(x, y, w, h, color, parent) {
+  const g = parent || svg;
+  el('rect', { x, y: y+8, width:w, height:h-8, rx:6, fill:'#fff', stroke:color, 'stroke-width':2.2 }, g);
+  el('rect', { x: x+w/2-3, y, width:6, height:9, fill:color, stroke:'none' }, g);
+}
+function qc(x, y, kind, tag, sub, name, opts = {}) { // plate-mounted quick coupling; integrated vent-on-disconnect stub below
+  const g = grp(name || `${tag} — quick coupling`); const c = (CLS[kind]||{stroke:INK}).stroke;
+  el('rect', { x:x-10, y:y-10, width:20, height:20, rx:3, fill:'#fff', stroke:c, 'stroke-width':2.2 }, g);
+  el('path', { d:`M${x-3},${y-6} L${x-3},${y+6} M${x+3},${y-6} L${x+3},${y+6}`, stroke:c, 'stroke-width':1.8 }, g);
+  if (opts.vent === true) {
+    el('path', { d:`M${x},${y+10} L${x},${y+24}`, stroke:CLS.vnt.stroke, 'stroke-width':1.6, 'stroke-dasharray':'4 4' }, g);
+    arrow(x, y+30, 'd', CLS.vnt.stroke, g);
+  }
+  if (tag) {
+    const ty = opts.above ? y - 31 : y + 46;
+    label(x, ty, tag, { size:9, mono:true, parent:g });
+    if (sub) label(x, ty + 11, sub, { size:8, color:MUTED, parent:g });
+  }
+  return g;
+}
+
+/* ---------- sheet frame + heading ---------- */
+el('rect', { x:20, y:20, width:1560, height:1024, fill:'#fff', stroke:INK, 'stroke-width':2 });
+label(40, 58, 'PORTABLE FILL STATION — MODULE A · FILL PANEL', { size:15, anchor:'start', weight:700 });
+label(40, 78, 'PROCESS & INSTRUMENTATION DIAGRAM · O₂ · He · AIR — 300 bar SUPPLY / 200 bar FILL', { size:9.5, anchor:'start', color:MUTED });
+label(40, 96, 'BSD-PFS-001 · REV A · 2026-09-04 · SUPERSEDES SK-A · FOR FABRICATION REVIEW', { size:9, anchor:'start', mono:true, color:MUTED });
+
+/* ---------- legend (top-right) ---------- */
+const LX = 900, LY = 30;
+el('rect', { x:LX, y:LY, width:670, height:110, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(LX + 12, LY + 18, 'LEGEND', { size:9.5, anchor:'start', mono:true });
+[['o2','OXYGEN'],['he','HELIUM'],['hp','HP AIR'],['mix','PRODUCT / MIX'],['drv','DRIVE GAS'],['vnt','VENT']]
+  .forEach(([k, name], i) => { const y = LY + 34 + i * 13; pipe([[LX + 14, y],[LX + 54, y]], k, 2.2); label(LX + 62, y + 3.5, name, { size:8, anchor:'start' }); });
+valve(LX + 230, LY + 42, 'h', undefined, '', 'Needle valve', { needle:true });
+label(LX + 248, LY + 46, 'NEEDLE VALVE — ISOLATE & METER', { size:8, anchor:'start' });
+checkV(LX + 230, LY + 64, 'h', undefined, 1);
+label(LX + 248, LY + 68, 'CHECK VALVE (NON-RETURN)', { size:8, anchor:'start' });
+qc(LX + 230, LY + 84, undefined, '', '', 'Quick coupling', { vent:false });
+label(LX + 248, LY + 88, 'QUICK COUPLING — DOUBLE-CHECK (FAV FDQRCO2), LABELLED', { size:8, anchor:'start' });
+el('circle', { cx: LX + 230, cy: LY + 106, r:9, fill:'#fff', stroke:INK, 'stroke-width':1.6 });
+label(LX + 230, LY + 109, 'PI', { size:7.5, mono:true });
+label(LX + 248, LY + 110, 'PRESSURE GAUGE', { size:8, anchor:'start' });
+psvUp(LX + 470, LY + 98, undefined, 'PSV');
+label(LX + 488, LY + 72, 'RELIEF VALVE (PSV)', { size:8, anchor:'start' });
+ventBulkhead(LX + 470, LY + 106);
+label(LX + 488, LY + 110, 'VENT BULKHEAD (CASE WALL)', { size:8, anchor:'start' });
+regV(LX + 590, LY + 60, undefined, '', '', 'Pressure regulator');
+label(LX + 590, LY + 84, 'REGULATOR', { size:8 });
+
+/* ---------- panel boundary ---------- */
+const PX = 240, PY = 150, PW = 1000, PH = 670, HX = 680;
+el('rect', { x:PX, y:PY, width:PW, height:PH, fill:'#fff', stroke:INK, 'stroke-width':2.6 });
+label(PX + 20, PY + 22, 'MODULE A · PORTABLE FILL PANEL — PELICAN 1550 · PLATE IN THE BODY 30 mm BELOW THE RIM · LID OPEN WHEN GAS FLOWS', { size:10, anchor:'start', weight:700 });
+label(PX + 20, PY + 36, 'O₂-SERVICE THROUGHOUT — CLEANED IN-HOUSE TO ASTM G93 / CGA G-4.1 · 316 SS ¼" × 0.065" · ≥414 bar (NEEDLE VALVES 344) · NO BALL VALVES IN THE GAS PATH', { size:8, anchor:'start', color:RED });
+
+/* ---------- supplies (external) + inlet legs ---------- */
+const LEGS = [
+  { y:250, kind:'o2', qc:'QC-01', sub:'O₂', pi:'01', nv:'NV-01', cv:'CV-01', xs:[60, 92, 124], tag:'PM-01', sup:'O₂ 3 × 47 L · 150 bar · G5/8 BULLNOSE',
+    tipQ:'QC-01 — O₂ inlet coupling, FAV FDQRCO2 double-check on a ¼ in NPT bulkhead adaptor, labelled O₂ (not keyed). Bleed the leg through NV-01 → NV-04 → V-01 before parting', tipP:'PI-01 — O₂ supply pressure', tipN:'NV-01 — meters O₂ into the manifold; regulating stem, slow opening', tipC:'CV-01 — stops He or air backing into the O₂ cascade',
+    tipS:'PM-01 — oxygen cascade pigtail manifold (BSD-PFS-002): three G 5/8 bullnose pigtails (IS 3224 outlet No. 3) with check valves into a tee chain, one outlet whip; one cylinder valve open at a time, lowest first' },
+  { y:360, kind:'he', qc:'QC-02', sub:'He', pi:'02', nv:'NV-02', cv:'CV-02', xs:[76, 108], tag:'PM-02', sup:'He 2 × 47 L · 150–200 bar · G3/4',
+    tipQ:'QC-02 — He inlet coupling, labelled He (not keyed). Bleed the leg through NV-02 → NV-04 → V-01 before parting', tipP:'PI-02 — He supply pressure', tipN:'NV-02 — meters He into the manifold', tipC:'CV-02 — stops O₂ or air backing into the He cascade',
+    tipS:'PM-02 — helium cascade pigtail manifold (BSD-PFS-002): two G 3/4 female-nut pigtails (IS 3224 outlet No. 20, male valve outlet); the booster sweeps these down to ~30 bar' },
+  { y:470, kind:'hp', qc:'QC-03', sub:'AIR', pi:'03', nv:'NV-03', cv:'CV-03', xs:[92], tag:'PM-03', sup:'AIR 47 L 232 bar (300) · G7/8 / DIN',
+    tipQ:'QC-03 — air inlet coupling, labelled AIR (not keyed). Bleed the leg through NV-03 → NV-04 → V-01 before parting', tipP:'PI-03 — air supply pressure', tipN:'NV-03 — air top-up into the manifold', tipC:'CV-03 — stops O₂ or He backing into the air cylinder',
+    tipS:'PM-03 — breathing-air cylinder or bank (EN 12021) on a single pigtail (BSD-PFS-002) for the final top-up' },
+];
+label(104, 186, 'SUPPLIES — EXTERNAL, ON WHIPS', { size:8, color:MUTED });
+label(104, 198, 'PIGTAIL MANIFOLDS PM-01..03 — SEE BSD-PFS-002', { size:7.5, color:MUTED });
+LEGS.forEach(L => {
+  const y = L.y, c = CLS[L.kind].stroke;
+  const sg = grp(L.tipS);
+  el('rect', { x:48, y:y-44, width:112, height:88, fill:'none', stroke:c, 'stroke-width':1, 'stroke-dasharray':'4 4' }, sg);
+  L.xs.forEach(x => cyl(x, y-32, 24, 64, c, sg));
+  const first = L.xs[0] + 12, last = L.xs[L.xs.length - 1] + 12;
+  if (L.xs.length > 1) pipe([[first, y-36],[last, y-36]], L.kind, 1.6, sg);
+  pipe([[last, y-36],[150, y-36],[150, y],[PX, y]], L.kind, 2, sg);
+  label(104, y + 58, `${L.tag} · ${L.sup}`, { size:7.2, parent:sg });
+  arrow(200, y, 'r', c);
+  pipe([[PX, y],[HX, y]], L.kind, 2.4);
+  qc(PX, y, L.kind, L.qc, L.sub, L.tipQ, { above:true });
+  inst(340, y-42, 'PI', L.pi, [340, y-3], undefined, L.tipP);
+  valve(440, y, 'h', L.kind, L.nv, L.tipN, { needle:true });
+  checkV(540, y, 'h', L.kind, 1, L.cv, L.tipC);
+  arrow(620, y, 'r', c);
+});
+
+/* ---------- common manifold + selector ---------- */
+const man = grp('Common manifold — sits at supply pressure in booster mode and at cylinder pressure in direct mode; no instruments of its own');
+pipe([[HX, 250],[HX, 720]], 'mix', 3, man);
+label(HX + 12, 246, 'COMMON MANIFOLD · SUPPLY ≤300 bar · NO PSV (SOURCE-LIMITED)', { size:8, anchor:'start', color:MUTED });
+label(HX + 12, 552, 'SELECTOR', { size:8, anchor:'start', color:MUTED });
+valve(HX, 645, 'v', 'mix', 'NV-04', 'NV-04 DIRECT — manifold straight to the fill line. Shut when boosting.', { needle:true, sub:'DIRECT' });
+arrow(HX, 700, 'd', INK);
+
+/* booster suction: manifold → QC-04 */
+pipe([[HX, 570],[PX+PW, 570]], 'mix', 2.4);
+valve(770, 570, 'h', 'mix', 'NV-05', 'NV-05 TO BOOSTER — manifold to the booster suction coupling. Shut in direct mode.', { needle:true, sub:'TO BOOSTER' });
+arrow(1180, 570, 'r', INK);
+qc(PX+PW, 570, 'mix', 'QC-04', 'BOOSTER SUCTION', 'QC-04 — booster suction coupling, labelled; bleeds back through NV-05 to V-01', { above:true });
+
+/* booster return: QC-05 → CV-04 → fill line */
+pipe([[PX+PW, 650],[1120, 650],[1120, 720]], 'mix', 2.4);
+arrow(1180, 650, 'l', INK);
+checkV(1120, 688, 'v', 'mix', 1, 'CV-04', 'CV-04 — stops the fill line backing into the booster discharge');
+qc(PX+PW, 650, 'mix', 'QC-05', 'BOOSTER RETURN', 'QC-05 — booster return coupling, labelled; bleeds through CV-04 to V-01', { above:true });
+
+/* ---------- fill line ---------- */
+pipe([[HX, 720],[PX+PW, 720]], 'mix', 2.8);
+label(700, 745, 'FILL LINE · 200 bar CLASS · PSV-01 220 bar', { size:8, anchor:'start', color:MUTED });
+inst(850, 665, 'PI', '04', [850, 717], 'MASTER · DIGITAL', 'PI-04 — master blending gauge, digital 0–400 bar ±0.5 bar; reads the cylinder being filled');
+psvDown(960, 720, 'mix', 'PSV-01', '220 bar', 'PSV-01 — fill-line relief, set 220 bar, sized for the booster flow; discharges through VB-01 outside the case');
+pipe([[960, 766],[960, 812]], 'vnt', 1.6);
+ventBulkhead(960, 820, 'VB-01 — vent bulkhead through the case wall; deflector points the discharge away from the operator');
+pipe([[960, 826],[960, 836]], 'vnt', 1.6);
+arrow(960, 842, 'd', CLS.vnt.stroke);
+label(976, 808, 'VB-01', { size:9, mono:true, anchor:'start' });
+label(976, 819, 'VENT BULKHEAD → OUTSIDE THE CASE · PSV-01 + V-01', { size:7.5, anchor:'start', color:MUTED });
+arrow(1200, 720, 'r', INK);
+qc(PX+PW, 720, 'mix', 'QC-06', 'PRODUCT', 'QC-06 — product coupling to the fill whip, labelled PRODUCT; V-01 sits right behind it', { above:true });
+/* fill-line bleed V-01 just before the product coupling */
+pipe([[1180, 720],[1180, 742]], 'mix', 2);
+valve(1180, 754, 'v', 'mix', 'V-01', 'V-01 — fill-line bleed: with NV-04 open it empties the fill line and manifold before QC-06 is parted or the case is packed; discharges with PSV-01 through VB-01', { needle:true, sub:'BLEED' });
+pipe([[1180, 766],[1180, 790],[960, 790]], 'vnt', 1.6);
+
+/* ---------- externals right: booster in its own case, drive gas, fill cylinder ---------- */
+const BX = 1320, BY = 490;
+el('rect', { x:1290, y:455, width:270, height:250, fill:'none', stroke:INK, 'stroke-width':1, 'stroke-dasharray':'6 5' });
+label(1300, 470, 'BOOSTER — OWN PELICAN CASE', { size:8, anchor:'start', color:MUTED });
+const bst = grp('BST-01 — USUN XBD30-OL air-driven gas booster, 30:1, O₂-cleaned. Drive ≤8 bar, inlet ≥30 bar, max out ≈240 bar. Own gauges, relief and purge in the package.');
+el('rect', { x:BX, y:BY, width:150, height:175, fill:'#fff', stroke:INK, 'stroke-width':2.4 }, bst);
+el('rect', { x:BX+14, y:BY+10, width:122, height:32, fill:'none', stroke:INK, 'stroke-width':1.3 }, bst);
+el('rect', { x:BX+14, y:BY+55, width:122, height:110, fill:'none', stroke:INK, 'stroke-width':1.3 }, bst);
+label(BX+75, BY+30, 'AIR DRIVE', { size:8.5, parent:bst });
+label(BX+75, BY+102, 'GAS SECTION', { size:8.5, parent:bst });
+label(BX+75, BY+114, '(O₂-CLEAN) · 30:1', { size:7.5, color:MUTED, parent:bst });
+label(BX+75, BY+126, 'INLET ≥30 bar', { size:7.5, color:MUTED, parent:bst });
+label(BX+75, BY+138, 'MAX OUT ≈240 bar', { size:7.5, color:MUTED, parent:bst });
+label(BX+75, 684, 'BST-01 · USUN XBD30-OL', { size:8.5 });
+label(BX+75, 696, 'O₂-CLEANED · ≈31 × 12 × 13 cm', { size:7.5, color:MUTED });
+pipe([[PX+PW, 570],[BX, 570]], 'mix', 2);
+arrow(1290, 570, 'r', INK);
+pipe([[BX, 650],[PX+PW, 650]], 'mix', 2);
+arrow(1275, 650, 'l', INK);
+/* drive exhaust */
+pipe([[1450, BY],[1450, BY-16]], 'vnt', 1.6);
+arrow(1450, BY-22, 'u', CLS.vnt.stroke);
+label(1462, BY-12, 'EXH', { size:7.5, anchor:'start', color:MUTED });
+/* drive gas: scuba cylinder through a first stage */
+const drv = grp('Drive gas — a scuba cylinder through first stage R-01; the standard expedition arrangement when there is no compressor');
+cyl(1490, 350, 24, 70, CLS.drv.stroke, drv);
+pipe([[1502, 420],[1502, 516],[BX+150, 516]], 'drv', 2, drv);
+regV(1502, 452, 'drv', 'R-01', '≈7 bar', 'R-01 — first-stage regulator on the drive cylinder; intermediate pressure set ≈7 bar so the booster stalls below the 220 bar relief');
+label(1476, 372, 'DRIVE GAS', { size:8, mono:true, anchor:'end' });
+label(1476, 383, 'SCUBA CYLINDER VIA 1st STAGE', { size:7.5, anchor:'end', color:MUTED });
+label(1476, 394, 'XBD30 MAX DRIVE 8 bar', { size:7.5, anchor:'end', color:MUTED });
+/* fill whip → DIN adaptor with bleed → cylinder */
+const fw = grp('W-04 — fill whip: 1.5 m O₂-clean HP hose, DIN 232 adaptor with bleed screw; the bleed empties the whip and fill line after each fill');
+pipe([[PX+PW, 720],[1300, 720],[1300, 742]], 'mix', 2, fw);
+el('rect', { x:1291, y:742, width:18, height:14, rx:2, fill:'#fff', stroke:INK, 'stroke-width':1.8 }, fw);
+cyl(1288, 758, 24, 62, INK, fw);
+label(1322, 772, 'FILL CYLINDER · DIN 232', { size:8.5, anchor:'start' });
+label(1322, 784, 'FILL TO 200 bar', { size:7.5, anchor:'start', color:MUTED });
+label(1322, 796, 'BLEED SCREW ON THE DIN ADAPTOR', { size:7.5, anchor:'start', color:MUTED });
+label(1322, 808, 'ANALYSE AT THE VALVE · LABEL', { size:7.5, anchor:'start', color:MUTED });
+
+/* ---------- operation (inside the panel, bottom-left) ---------- */
+el('rect', { x:260, y:590, width:400, height:212, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(272, 610, 'OPERATION', { size:9.5, anchor:'start', mono:true });
+[
+  '1  ALL NV SHUT. MATE KEYED COUPLINGS QC-01/02/03 PRESSURE-FREE.',
+  '    READ PI-01..03. FILL CYLINDER ON QC-06, OPEN ITS VALVE:',
+  '    PI-04 READS THE CYLINDER.',
+  '2  DIRECT: NV-04 OPEN, NV-05 SHUT. METER O₂ ON NV-01 TO TARGET',
+  '    pO₂ ON PI-04; SHUT. THEN He ON NV-02. THEN AIR ON NV-03.',
+  '3  BOOST: SUPPLY ≤ CYLINDER — NV-04 SHUT, NV-05 OPEN, RUN BST-01.',
+  '    OUT VIA QC-04, BACK VIA QC-05 / CV-04. STOP AT TARGET.',
+  '4  FINISH: SHUT CYLINDER VALVE, BLEED WHIP AT THE DIN ADAPTOR,',
+  '    OPEN NV-04 + V-01 TO EMPTY THE PANEL, SHUT ALL. PART COUPLINGS.',
+  '5  ANALYSE O₂ / He AT THE CYLINDER VALVE AFTER SETTLING. LABEL.',
+].forEach((s, i) => label(272, 630 + i * 15.5, s, { size:8.3, anchor:'start', weight:500 }));
+
+/* ---------- general notes (bottom-left) ---------- */
+el('rect', { x:40, y:850, width:560, height:184, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(52, 870, 'GENERAL NOTES', { size:9.5, anchor:'start', mono:true });
+[
+  '1. O₂-SERVICE THROUGHOUT: STANDARD 316 SS PARTS, DEGREASED AND RE-LUBRICATED IN-HOUSE (ASTM G93 / CGA G-4.1).',
+  '    PTFE / FKM SEALS, KRYTOX ONLY. RATED ≥414 bar; NEEDLE VALVES 344 bar (ABOVE THE 300 bar MAX SUPPLY).',
+  '2. FILL ZONE 200 bar, PSV-01 SET 220 bar, DOWNSTREAM OF NV-04 AND CV-04. INLET LEGS,',
+  '    MANIFOLD AND BOOSTER LOOP SEE SUPPLY ≤300 bar: SOURCE-LIMITED, NO PSV.',
+  '3. NEEDLE VALVES ONLY IN THE GAS PATH — OPEN SLOWLY (ASTM G88). NO BALL VALVES.',
+  '4. QUICK COUPLINGS FAV FDQRCO2 DOUBLE-CHECK, ¼" NPT F, 6000 psi, 316 SS, SEALS SWAPPED IN-HOUSE. PORTS LABELLED AND',
+  '    COLOUR-BANDED, NOT KEYED. BLEED THE LEG (V-01 WITH THE NEEDLE VALVES OPEN) BEFORE MATING OR PARTING — NEVER UNDER PRESSURE.',
+  '5. PSV-01 AND BLEED V-01 DISCHARGE THROUGH VB-01 OUTSIDE THE CASE, AWAY FROM THE OPERATOR.',
+  '    BLEED THE PANEL ON V-01 BEFORE PARTING QC-06. FILL WHIP BLEEDS AT ITS DIN ADAPTOR. LID OPEN.',
+  '6. CASCADE: ONE SUPPLY CYLINDER VALVE OPEN AT A TIME, LOWEST PRESSURE FIRST.',
+  '7. DRY GAUGES ONLY — NO GLYCERINE FILL. PI-04 IS THE BLENDING REFERENCE.',
+  '8. REV A FOR FABRICATION REVIEW. PART CLASSES SHOWN; MODELS PER OBLIGATIONS.md.',
+].forEach((s, i) => label(52, 889 + i * 12.6, s, { size:8.2, anchor:'start', weight:500 }));
+
+/* ---------- set points (bottom-centre) ---------- */
+el('rect', { x:620, y:850, width:580, height:184, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(632, 870, 'SET POINTS & PRESSURE CLASSES', { size:9.5, anchor:'start', mono:true });
+[
+  ['SUPPLIES', 'O₂ 150 bar (147) · He 150–200 bar · AIR 232 bar (300) · SOURCE-LIMITED'],
+  ['INLET LEGS · MANIFOLD · BOOSTER LOOP', '≤300 bar SUPPLY · RATED 414 bar (NEEDLE VALVES 344) · NO PSV'],
+  ['FILL LINE (AFTER NV-04 / CV-04)', '200 bar FILL · PSV-01 220 bar · RATED 414 bar'],
+  ['BST-01 USUN XBD30-OL', '30:1 · DRIVE ≤8 bar · INLET ≥30 bar · MAX OUT ≈240 bar'],
+  ['R-01 DRIVE REGULATOR', '≈7 bar → BOOSTER STALL <220 bar [CONFIRM CURVE]'],
+  ['PI-01..03', '0–400 bar · CLASS 1.6 · DRY · O₂-CLEANED'],
+  ['PI-04 MASTER', '0–400 bar · DIGITAL ±0.5 bar · O₂-CLEANED'],
+  ['QC-01..06', 'FAV FDQRCO2 · 6000 psi · ¼" NPT F · DOUBLE-CHECK POPPET · LABELLED, NOT KEYED'],
+  ['V-01 FILL-LINE BLEED', '¼" NEEDLE · 6000 psi · TO VB-01 WITH PSV-01'],
+  ['TUBE & FITTINGS', '¼" × 0.065" 316 SS · SWAGELOK / FAV · CLEANED IN-HOUSE'],
+].forEach(([k, v], i) => {
+  const y = 888 + i * 15;
+  label(632, y, k, { size:8, anchor:'start', mono:true, color:MUTED });
+  label(870, y, v, { size:8.2, anchor:'start', weight:500 });
+});
+
+/* ---------- title block (bottom-right) ---------- */
+const TB = grp();
+el('rect', { x:1220, y:850, width:360, height:184, fill:'#fff', stroke:INK, 'stroke-width':2 }, TB);
+el('path', { d:'M1220,906 L1580,906 M1220,962 L1580,962 M1400,962 L1400,998 M1220,998 L1580,998 M1340,998 L1340,1034 M1480,998 L1480,1034', stroke:INK, 'stroke-width':1 }, TB);
+label(1234, 874, 'PORTABLE FILL STATION', { size:13, anchor:'start', weight:700 });
+label(1234, 893, 'MODULE A · PARTIAL-PRESSURE FILL PANEL', { size:9.5, anchor:'start', color:MUTED });
+label(1234, 928, 'PROCESS & INSTRUMENTATION DIAGRAM', { size:10, anchor:'start' });
+label(1234, 946, 'O₂ · He · AIR — 300 bar SUPPLY / 200 bar FILL · PELICAN 1550', { size:8, anchor:'start', color:MUTED });
+label(1234, 978, 'DWG NO', { size:7.5, anchor:'start', color:MUTED });
+label(1234, 991, 'BSD-PFS-001', { size:10, anchor:'start', mono:true });
+label(1412, 978, 'REV', { size:7.5, anchor:'start', color:MUTED });
+label(1412, 991, 'A', { size:10, anchor:'start', mono:true });
+label(1234, 1014, 'DATE', { size:7.5, anchor:'start', color:MUTED });
+label(1234, 1027, '2026-09-04', { size:9.5, anchor:'start', mono:true });
+label(1354, 1014, 'DRAWN BY', { size:7.5, anchor:'start', color:MUTED });
+label(1354, 1027, 'DONARUN DAS', { size:9.5, anchor:'start', mono:true });
+label(1494, 1014, 'SCALE', { size:7.5, anchor:'start', color:MUTED });
+label(1494, 1027, 'NTS', { size:9.5, anchor:'start', mono:true });
+
+/* ---------- tooltips ---------- */
+const tipEl = document.createElement('div');
+tipEl.className = 'pid-tip';
+document.body.appendChild(tipEl);
+function renderTip(txt) {
+  tipEl.textContent = '';
+  const sep = txt.indexOf(' — ');
+  if (sep > 0 && sep < 44) {
+    const tag = document.createElement('span'); tag.className = 'tip-tag'; tag.textContent = txt.slice(0, sep);
+    tipEl.appendChild(tag); tipEl.appendChild(document.createTextNode(txt.slice(sep + 3)));
+  } else tipEl.appendChild(document.createTextNode(txt));
+}
+function placeTip(x, y) {
+  const r = tipEl.getBoundingClientRect();
+  let left = x + 14, top = y + 16;
+  if (left + r.width > innerWidth - 8) left = x - r.width - 14;
+  if (top + r.height > innerHeight - 8) top = y - r.height - 12;
+  tipEl.style.left = left + 'px'; tipEl.style.top = top + 'px';
+}
+let current = null;
+svg.addEventListener('pointermove', (e) => {
+  const g = e.target.closest('[data-tip]');
+  if (!g) { tipEl.style.opacity = 0; current = null; return; }
+  if (g !== current) { current = g; renderTip(g.getAttribute('data-tip')); }
+  tipEl.style.opacity = 1; placeTip(e.clientX, e.clientY);
+});
+svg.addEventListener('pointerleave', () => { tipEl.style.opacity = 0; current = null; });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Portable Fill Station — sourcing: RFQ-LOG</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+  :root{--page:#eef1f4;--text:#253242;--muted:#5b6b7d;--card:#fff;--rule:#d5dce3;--accent:#1d4ed8}
+  @media (prefers-color-scheme: dark){:root{--page:#161b22;--text:#dbe3ec;--muted:#93a3b5;--card:#1e2530;--rule:#333d4a;--accent:#7ea6ff}}
+  body{margin:0;background:var(--page);color:var(--text);font:15px/1.6 "Helvetica Neue",Arial,sans-serif}
+  header#title-block-header,main,.nav{max-width:920px;margin:0 auto;padding:0 24px}
+  .nav{padding-top:28px;font:600 12.5px/1 "Helvetica Neue",Arial,sans-serif}.nav a{display:inline-block;border:1px solid var(--rule);background:var(--card);color:var(--text);padding:8px 14px;border-radius:8px;text-decoration:none;margin:0 6px 6px 0}.nav a:hover{border-color:var(--accent);color:var(--accent)}
+  h1.title{font-size:27px;letter-spacing:-.4px;margin:18px 0 6px}h1,h2,h3{text-wrap:balance}h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:8px;margin:38px 0 14px;font-family:ui-monospace,Menlo,monospace}
+  table{border-collapse:collapse;width:100%;font-size:13.2px;display:block;overflow-x:auto}th,td{text-align:left;padding:7px 12px 7px 0;border-bottom:1px solid var(--rule);vertical-align:top}th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--card);padding:1px 4px;border-radius:4px}a{color:var(--accent)}
+  footer{max-width:920px;margin:44px auto 60px;padding:14px 24px 0;border-top:1px solid var(--rule);font-size:12.5px;color:var(--muted);text-align:center}
+  </style>
+</head>
+<body>
+<div class="nav"><a href="../index.html">← P&amp;ID REV A</a><a href="../portable-cascade-pid.html">Cascade (002)</a><a href="../portable-ga.html">GA (003)</a><a href="../boq.html">BOQ</a><a href="../portable-3d.html">3D</a><a href="../concept.html">Concept</a><a href="SOURCING.html">Sourcing</a></div>
+<header id="title-block-header">
+<h1 class="title">Portable Fill Station — sourcing: RFQ-LOG</h1>
+</header>
+<h1 id="rfq-log--portable-fill-station-sent-2026-09-04">RFQ log —
+portable fill station, sent 2026-09-04</h1>
+<p><strong>Live BOQ with prices as quotes land:</strong> <a
+href="https://claude.ai/code/artifact/84d72dae-c9cd-4820-afc1-2cd6e2a3a71b">https://claude.ai/code/artifact/84d72dae-c9cd-4820-afc1-2cd6e2a3a71b</a>
+(repo copy: <a href="../boq.html">../boq.html</a>).</p>
+<p>One email per vendor from <a
+href="mailto:donarundas.work@gmail.com">donarundas.work@gmail.com</a>.
+The reference in the subject line is the tracking key: search Gmail for
+<code>subject:"PFS-2609-NN"</code> to find the thread. Follow-up if no
+reply by 2026-09-11.</p>
+<table>
+<thead>
+<tr>
+<th>Ref</th>
+<th>Vendor</th>
+<th>To</th>
+<th>Items</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PFS-2609-01</td>
+<td>Swagelok Bangalore</td>
+<td><a
+href="mailto:bangalore@swagelok.com">bangalore@swagelok.com</a></td>
+<td>SS-1RS4 ×8, SS-CHS4-1 ×10, SS-4R3A5 + spring F,
+tees/unions/elbows/connectors, bulkheads, ¼ × 0.065 tube 6 m; SC-11 as
+option</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-02</td>
+<td>Swagelok Bombay</td>
+<td><a
+href="mailto:info@Bombay.swagelok.com">info@Bombay.swagelok.com</a></td>
+<td>same list as 01 (second Swagelok quote)</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-03</td>
+<td>FAV (Pioneer Enterprise), Mumbai</td>
+<td><a href="mailto:sales@fav.net.in">sales@fav.net.in</a></td>
+<td>FNV/MF/HP/02 ×8, FAVCV/MF/04 ×10, FCF tees/unions/elbows/connectors,
+FCF/BU/4I; stem type, Cv, lubricant, O₂ cleaning option</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-04</td>
+<td>Hydroflex Pipe, Ahmedabad</td>
+<td><a
+href="mailto:info@hydroflexpipes.com">info@hydroflexpipes.com</a></td>
+<td>DN6 400 bar hose assemblies: 3 whips, 1 DIN 232 fill whip with
+bleed, 6 IS 3224 pigtails (No. 3 ×3, No. 20 ×2, No. 19 ×1), 3 link
+hoses; O₂ cleaning</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-05</td>
+<td>WIKA India, Pune</td>
+<td><a href="mailto:info@wika.co.in">info@wika.co.in</a></td>
+<td>3 × 232.50 NS 63 0–400 bar oxygen version, CBM, U-clamps; 1 ×
+CPG1500 0–400 bar oxygen option</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-06</td>
+<td>Yashtec (KELLER India)</td>
+<td><a href="mailto:yashtec@yashtec.in">yashtec@yashtec.in</a></td>
+<td>1 × LEO5 0–400 bar (LEO 2 as alternative)</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-07</td>
+<td>WEH FluidTech GmbH</td>
+<td><a href="mailto:industry@weh.com">industry@weh.com</a></td>
+<td>6 keyed sockets + 6 (+4 spare) plugs, 300–400 bar O₂ service, vent
+on disconnect, panel mount</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-08</td>
+<td>USUN (Usun Fluid Equipment, Dongguan)</td>
+<td><a href="mailto:Sunny@u-sun.cn">Sunny@u-sun.cn</a></td>
+<td>XBD30-OL + hoses, drive kit, seal kit, case; GB40-OL-F for
+comparison; stall curve at 6/7/8 bar</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-09</td>
+<td>Cryo Gas Engineers, Noida</td>
+<td><a
+href="mailto:sales.cryogasengineers@gmail.com">sales.cryogasengineers@gmail.com</a>
+(cc <a
+href="mailto:cryogasengineers@gmail.com">cryogasengineers@gmail.com</a>)</td>
+<td>IS 3224 nut + nipple sets: No. 3 ×4, No. 20 ×3, No. 19 ×2, brass, O₂
+clean</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-10</td>
+<td>Peli Products (routes India from Barcelona)</td>
+<td><a href="mailto:info@peli.com">info@peli.com</a></td>
+<td>1 × Pelican 1550 with / without foam, lid organiser; Indian reseller
+referral</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-11</td>
+<td>Maximator India, Navi Mumbai</td>
+<td><a
+href="mailto:sales@maximatorindia.com">sales@maximatorindia.com</a></td>
+<td>oxygen booster alternative to the XBD30-OL (rebreather booster /
+DLE), stall curve, case</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>PFS-2609-03 (addendum)</td>
+<td>FAV</td>
+<td><a href="mailto:sales@fav.net.in">sales@fav.net.in</a> (same
+thread)</td>
+<td>FDQRCO2 quick couplings: 6 sockets + 10 plugs + caps + 6 bulkhead
+adaptors; gas-tightness, seals, locking, dimensions</td>
+<td>sent</td>
+</tr>
+<tr>
+<td>—</td>
+<td>Stäubli Tec-Systems India (ROX couplings)</td>
+<td>web form only</td>
+<td>—</td>
+<td><strong>dropped — FAV FDQRCO2 chosen 2026-09-04</strong></td>
+</tr>
+<tr>
+<td>PFS-2609-12</td>
+<td>Case N Foam (Toolfit), Bengaluru</td>
+<td><a href="mailto:info@caseandfoam.in">info@caseandfoam.in</a></td>
+<td>waterproof hard case ≈ 470 × 360 × 195 interior, EW/MAX series, lid
+foam option — local alternative to the Pelican 1550</td>
+<td>sent</td>
+</tr>
+</tbody>
+</table>
+<h2 id="replies">Replies</h2>
+<h3
+id="fav--pfs-2609-03-replied-2026-09-04-kutubuddin-pioneer-enterprise-91-9819921686">FAV
+— PFS-2609-03, replied 2026-09-04 (Kutubuddin, Pioneer Enterprise, +91
+9819921686)</h3>
+<p>Ex-works Mumbai · GST 18 % extra · delivery 25 working days · advance
+payment · validity not stated.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Qty</th>
+<th>Unit ₹</th>
+<th>Line ₹</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Needle valve ¼ in NPT M×F 10 000 psi (panel nut not confirmed)</td>
+<td>8</td>
+<td>2 275</td>
+<td>18 200</td>
+</tr>
+<tr>
+<td>Check valve ¼ in NPT M×F 6000 psi, crack ≈10 psi</td>
+<td>10</td>
+<td>1 865</td>
+<td>18 650</td>
+</tr>
+<tr>
+<td>Union tee ¼ in OD 6000 psi</td>
+<td>13</td>
+<td>683</td>
+<td>8 879</td>
+</tr>
+<tr>
+<td>Straight union ¼ in OD</td>
+<td>10</td>
+<td>387</td>
+<td>3 870</td>
+</tr>
+<tr>
+<td>Elbow union ¼ in OD</td>
+<td>10</td>
+<td>587</td>
+<td>5 870</td>
+</tr>
+<tr>
+<td>Male connector ¼ in OD × ¼ in NPT M</td>
+<td>20</td>
+<td>288</td>
+<td>5 760</td>
+</tr>
+<tr>
+<td>Bulkhead ¼ in OD × ¼ in NPT M (MOQ 5; we asked for tube×tube + NPT
+M×F types)</td>
+<td>5</td>
+<td>755</td>
+<td>3 775</td>
+</tr>
+<tr>
+<td>Tube plug ¼ in OD</td>
+<td>6</td>
+<td>283</td>
+<td>1 698</td>
+</tr>
+<tr>
+<td>Tube cap ¼ in OD</td>
+<td>6</td>
+<td>335</td>
+<td>2 010</td>
+</tr>
+<tr>
+<td><strong>Subtotal ex GST</strong></td>
+<td></td>
+<td></td>
+<td><strong>68 712</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Not answered: panel-mount confirmation, stem type / Cv / materials /
+lubricant, O-ring compound, lower cracking pressure, certificates, O₂
+cleaning option, validity. The coupling addendum arrived after their
+reply. <strong>Follow-up sent 2026-09-04</strong> in the same thread
+with those points plus new items: relief valve, hose assemblies, gauge
+adaptors, digital-gauge bulkhead adaptor, tube, FKM kits.</p>
+<p>Not sent, by design: the aluminium plate, base plate and standoffs
+(local machine shop, user's choice); the panel's tube runs come from the
+Swagelok/FAV quotes.</p>
+<footer>Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026</footer>
+</body>
+</html>

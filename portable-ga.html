@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Portable Fill Station GA Drawing</title>
+<style>
+  :root { --page:#eef1f4; --page-text:#253242; --page-muted:#5b6b7d; --card:#ffffff; --rule:#d5dce3; --accent:#1d4ed8; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --accent:#7ea6ff; } }
+  :root[data-theme="dark"] { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --accent:#7ea6ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--page-text); font: 15px/1.55 "Helvetica Neue", Arial, ui-sans-serif, sans-serif; }
+  header.page { max-width: 1180px; margin: 0 auto; padding: 34px 24px 18px; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  header.page .head-text { flex: 1 1 560px; min-width: 0; }
+  .nav-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 4px; }
+  .nav-row a, .print-btn { border: 1px solid var(--rule); background: var(--card); color: var(--page-text); padding: 8px 14px; border-radius: 8px; font: 600 12.5px/1 inherit; text-decoration: none; white-space: nowrap; cursor: pointer; }
+  .nav-row a:hover, .print-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .print-btn:focus-visible, .nav-row a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  header.page .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--page-muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  header.page h1 { font-size: 27px; margin: 6px 0 4px; letter-spacing: -.4px; text-wrap: balance; }
+  header.page p { margin: 0; color: var(--page-muted); max-width: 72ch; }
+  .sheet-wrap { max-width: 1660px; margin: 18px auto 0; padding: 0 24px; }
+  .sheet-scroll { overflow-x: auto; background: var(--card); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 1px 3px rgba(10,20,35,.08); }
+  .sheet-scroll svg { display: block; min-width: 1600px; width: 100%; height: auto; background: #fff; }
+  .rotate-hint { display: none; }
+  @media (orientation: portrait) and (hover: none) { .rotate-hint { display: block; max-width: 1660px; margin: 12px auto 0; padding: 10px 24px; font-size: 13px; color: var(--page-muted); text-align: center; } }
+  main.doc { max-width: 1180px; margin: 0 auto; padding: 26px 24px 80px; }
+  main.doc h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--page-muted); border-bottom: 1px solid var(--rule); padding-bottom: 8px; margin: 38px 0 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  main.doc p { max-width: 72ch; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.2px; }
+  .tbl-wrap { overflow-x: auto; }
+  th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--page-muted); font-weight: 600; }
+  td.mono, .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  ol.list, ul.list { font-size: 13.8px; padding-left: 22px; max-width: 80ch; }
+  ol.list li, ul.list li { margin-bottom: 8px; }
+  .page-foot { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--page-muted); text-align: center; }
+  .page-foot strong { color: var(--page-text); font-weight: 600; }
+  .pid-tip { position: fixed; z-index: 50; pointer-events: none; max-width: 320px; padding: 10px 13px; border-radius: 9px; background: #1c2530; color: #eef2f6; font-size: 12.5px; line-height: 1.5; box-shadow: 0 6px 18px rgba(10,20,35,.35); opacity: 0; transition: opacity .1s; }
+  .pid-tip .tip-tag { display: block; margin-bottom: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; font-weight: 600; letter-spacing: .03em; color: #ffd08a; }
+  @page { size: A4 landscape; margin: 9mm; }
+  @media print {
+    body { background: #fff; }
+    header.page, .rotate-hint, .pid-tip { display: none; }
+    .sheet-wrap { max-width: none; margin: 0; padding: 0; }
+    .sheet-scroll { border: none; box-shadow: none; border-radius: 0; overflow: visible; }
+    .sheet-scroll svg { min-width: 0; width: auto; height: 186mm; margin: 0 auto; }
+    main.doc { break-before: page; max-width: none; padding: 0; column-count: 2; column-gap: 26px; }
+    table { font-size: 8.3px; } th, td { padding: 1.5px 6px 1.5px 0; } ol.list, ul.list { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+<header class="page">
+  <div class="head-text">
+  <div class="eyebrow">BSD-PFS-003 · REV A · 2026-09-04 · General arrangement &amp; plate drilling</div>
+  <h1>Portable Fill Station — general arrangement</h1>
+  <p>The REV A panel as a fabrication drawing: plan of the 460 × 350 × 4 mm plate inside the Pelican 1550 with every hole located from the plate's back-left corner, a section through the oxygen column showing the component stack from case floor to closed lid, a hole schedule and the parts to make. Dimensions in millimetres. Hole sizes marked [CONFIRM] are cut to the vendor drawing of the purchased part.</p>
+  </div>
+  <div class="nav-row">
+    <a href="portable-pid.html">← P&amp;ID REV A</a>
+    <a href="portable-cascade-pid.html">Cascade (002)</a>
+    <a href="portable-3d.html">3D</a>
+    <a href="boq.html">BOQ</a>
+    <button class="print-btn" type="button" onclick="window.print()">Print / PDF</button>
+  </div>
+</header>
+
+<div class="sheet-wrap">
+  <div class="sheet-scroll"><svg id="ga" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1080" role="img" aria-label="General arrangement drawing: plan view of the panel plate in the Pelican 1550 with gauges, needle valves and couplings located and dimensioned, a section through the case showing plate height and component heights, a hole schedule, notes and title block"></svg></div>
+</div>
+<p class="rotate-hint">Rotate your phone to landscape to read the sheet. Hover or tap a component for its hole and position.</p>
+
+<main class="doc">
+  <h2>Component positions — from the plate's back-left corner, x to the right, y towards the operator</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Tag</th><th>Item</th><th>x (mm)</th><th>y (mm)</th><th>Hole</th><th>Above plate</th><th>Below plate</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">PI-01 · 02 · 03</td><td>63 mm supply gauges, centre-back mount, U-clamp</td><td class="mono">60 · 135 · 210</td><td class="mono">75</td><td class="mono">A Ø67</td><td class="mono">14</td><td class="mono">≈35</td></tr>
+      <tr><td class="mono">PI-04</td><td>digital master gauge on a ¼ in bulkhead adaptor</td><td class="mono">380</td><td class="mono">75</td><td class="mono">D Ø14.5</td><td class="mono">≈80</td><td class="mono">≈30</td></tr>
+      <tr><td class="mono">NV-01 · 02 · 03</td><td>supply needle valves, panel nut</td><td class="mono">60 · 135 · 210</td><td class="mono">185</td><td class="mono">B Ø14.5</td><td class="mono">≈55</td><td class="mono">≈70</td></tr>
+      <tr><td class="mono">NV-04 · NV-05</td><td>DIRECT · TO BOOSTER</td><td class="mono">320 · 400</td><td class="mono">185</td><td class="mono">B Ø14.5</td><td class="mono">≈55</td><td class="mono">≈70</td></tr>
+      <tr><td class="mono">V-01</td><td>fill-line bleed</td><td class="mono">425</td><td class="mono">235</td><td class="mono">B Ø14.5</td><td class="mono">≈55</td><td class="mono">≈70</td></tr>
+      <tr><td class="mono">QC-01 · 02 · 03</td><td>inlet couplings O₂ · He · AIR — FAV FDQRCO2 sockets on ¼ in NPT bulkhead adaptors</td><td class="mono">60 · 135 · 210</td><td class="mono">290</td><td class="mono">C Ø14.5</td><td class="mono">≈60</td><td class="mono">≈30</td></tr>
+      <tr><td class="mono">QC-04 · 05 · 06</td><td>booster out · booster in · product — same sockets</td><td class="mono">285 · 360 · 435</td><td class="mono">290</td><td class="mono">C Ø14.5</td><td class="mono">≈60</td><td class="mono">≈30</td></tr>
+      <tr><td class="mono">—</td><td>standoff bolts M6</td><td class="mono">14 · 446</td><td class="mono">14 · 336</td><td class="mono">E Ø6.5</td><td class="mono">—</td><td class="mono">112 standoff</td></tr>
+      <tr><td class="mono">VB-01</td><td>vent bulkhead union — in the case <b>back wall</b>, not the plate</td><td class="mono">20</td><td class="mono">100 above floor</td><td class="mono">F Ø11.5</td><td colspan="2">deflector outside the case</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Hole schedule</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Mark</th><th>Ø (mm)</th><th>Qty</th><th>For</th><th>Basis</th></tr></thead>
+    <tbody>
+      <tr><td class="mono">A</td><td class="mono">67</td><td class="mono">3</td><td>PI-01..03 gauge cut-outs</td><td>WIKA 232.50 NS 63 catalogue panel cut-out Ø67. 75 mm pitch leaves 8 mm between cut-outs; U-clamp envelope to be checked <b>[CONFIRM]</b></td></tr>
+      <tr><td class="mono">B</td><td class="mono">14.5</td><td class="mono">6</td><td>NV-01..05 and V-01 panel nuts</td><td>nominal for a Swagelok 1RS4-class panel nut; max panel 4.8 mm <b>[CONFIRM to vendor drawing]</b></td></tr>
+      <tr><td class="mono">C</td><td class="mono">14.5</td><td class="mono">6</td><td>QC-01..06 ¼ in NPT bulkhead adaptors; the FAV FDQRCO2 socket screws on above the plate</td><td>nominal for a ¼ in NPT through-plate adaptor <b>[CONFIRM]</b>; socket height ≈60 mm from FAV's L dimensions <b>[CONFIRM]</b></td></tr>
+      <tr><td class="mono">D</td><td class="mono">14.5</td><td class="mono">1</td><td>PI-04 bulkhead adaptor</td><td>¼ in NPT bulkhead male connector <b>[CONFIRM]</b></td></tr>
+      <tr><td class="mono">E</td><td class="mono">6.5</td><td class="mono">4</td><td>M6 standoff bolts</td><td>clearance for M6</td></tr>
+      <tr><td class="mono">F</td><td class="mono">11.5</td><td class="mono">1</td><td>VB-01 ¼ in tube bulkhead union, case back wall</td><td>29/64 in bulkhead hole; the only hole in the case <b>[CONFIRM]</b></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Parts to make or buy for the arrangement</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Item</th><th>Qty</th><th>Spec</th></tr></thead>
+    <tbody>
+      <tr><td>Panel plate</td><td class="mono">1</td><td>460 × 350 × 4 mm aluminium 5052-H32 or 6061-T6, corners R10, deburred, anodised; laser-engraved tags 4 mm high; colour bands 12 mm wide engraved 0.3 mm and paint-filled (O₂ green, He brown, air blue, MIX black)</td></tr>
+      <tr><td>Base plate</td><td class="mono">1</td><td>440 × 330 × 3 mm aluminium, sits on the case floor, 4 × M6 tapped bosses at the standoff positions; the whole assembly lifts out on it</td></tr>
+      <tr><td>Standoffs</td><td class="mono">4</td><td>Ø16 × 112 mm aluminium tube, M6 tapped both ends</td></tr>
+      <tr><td>Fasteners</td><td class="mono">8</td><td>M6 × 12 A4 stainless cap screws with washers</td></tr>
+      <tr><td>Bulkhead adaptors</td><td class="mono">6</td><td>¼ in NPT male/female through-plate adaptors, 316 SS, 6000 psi, for the FAV FDQRCO2 sockets</td></tr>
+      <tr><td>Gauge clamps</td><td class="mono">3</td><td>WIKA U-clamp brackets for NS 63</td></tr>
+      <tr><td>Case</td><td class="mono">1</td><td>Pelican 1550, one Ø11.5 hole in the back wall for VB-01</td></tr>
+      <tr><td>Lid organiser</td><td class="mono">1</td><td>closed-cell foam or nylon panel with pockets for four whips and the pigtail sets</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Assembly and test sequence</h2>
+  <ol class="list">
+    <li>Drill pilot holes only until the purchased parts are in hand, then open A–F to the vendor drawings. Anodise and engrave after drilling.</li>
+    <li>Oxygen-clean assembly of standard parts: disassemble each valve, degrease, fit FKM or PTFE seals, re-lubricate with Krytox or Christo-Lube only, and inspect under UV and white light to ASTM G93 / CGA G-4.1 before it goes on. Clean bench, lint-free gloves, no hydrocarbons.</li>
+    <li>Fit gauges, valves and couplings to the plate; route ¼ in tube under the plate per BSD-PFS-001, at least 15 mm above the base plate, clipped every 200 mm.</li>
+    <li>Leak test with dry nitrogen: inlet legs and manifold at 330 bar (1.1 × maximum supply), fill line at 250 bar with PSV-01 blanked. Soap or an oxygen-compatible detector on every joint. Restore PSV-01 and confirm lift at about 220 bar.</li>
+    <li>Purge with nitrogen, cap every coupling, fit the assembly into the case on its base plate, connect VB-01 through the back wall.</li>
+  </ol>
+
+  <h2>Confirm before cutting</h2>
+  <ul class="list">
+    <li>Hole diameters B, C, D and F against the drawings of the parts actually bought; only A and E are catalogue values.</li>
+    <li>Gauge U-clamp envelope at 75 mm pitch, or widen the gauge row to 80 mm pitch and let the colour bands jog.</li>
+    <li>Digital gauge height (≈80 mm) against the 30 mm rim gap plus 44 mm lid recess: it clears by about 6 mm on the LEO5; check the CPG1500.</li>
+    <li>Pelican 1550 actual interior at the plate height — the walls taper; measure before cutting the plate.</li>
+  </ul>
+
+  <footer class="page-foot">Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026 · BSD-PFS-003 REV A — for fabrication review</footer>
+</main>
+
+<script>
+(() => {
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('ga');
+const INK = '#1c2530', MUTED = '#5b6b7d', RED = '#b91c1c', DIM = '#3b4a5c', HID = '#8b93a1';
+const GAS = { o2:'#15803d', he:'#8a5a2b', air:'#1d4ed8', mix:'#1c2530' };
+
+function el(name, attrs = {}, parent = svg) { const n = document.createElementNS(NS, name); for (const k in attrs) n.setAttribute(k, attrs[k]); parent.appendChild(n); return n; }
+function grp(title) { const g = el('g'); if (title) { g.setAttribute('data-tip', title); g.style.cursor = 'help'; } return g; }
+function label(x, y, str, o = {}) {
+  const t = el('text', { x, y, fill: o.color || INK, 'font-size': o.size || 11, 'text-anchor': o.anchor || 'middle', 'font-family': o.mono ? 'ui-monospace,Menlo,monospace' : 'Helvetica Neue,Arial,sans-serif', 'font-weight': o.weight || (o.mono ? 500 : 600), 'letter-spacing': o.ls || (o.mono ? '0' : '.03em') }, o.parent || svg);
+  if (o.rotate) t.setAttribute('transform', `rotate(${o.rotate} ${x} ${y})`);
+  t.textContent = str; return t;
+}
+function line(x1, y1, x2, y2, o = {}) { return el('path', { d:`M${x1},${y1} L${x2},${y2}`, stroke:o.color || INK, 'stroke-width':o.w || 1, 'stroke-dasharray': o.dash || 'none', fill:'none' }, o.parent || svg); }
+function tick(x, y, o = {}) { // dimension end tick (45°)
+  el('path', { d:`M${x-4},${y+4} L${x+4},${y-4}`, stroke:o.color || DIM, 'stroke-width':1.2 }, o.parent || svg);
+}
+function dimH(x1, x2, y, text, o = {}) { // horizontal dimension with extension lines from y0
+  const g = o.parent || svg;
+  if (o.ext !== undefined) { line(x1, o.ext, x1, y + (o.ext < y ? 4 : -4), { color:DIM, w:.7, parent:g }); line(x2, o.ext, x2, y + (o.ext < y ? 4 : -4), { color:DIM, w:.7, parent:g }); }
+  line(x1, y, x2, y, { color:DIM, w:.9, parent:g }); tick(x1, y, { parent:g }); tick(x2, y, { parent:g });
+  label((x1 + x2) / 2, y - 4, text, { size:o.size || 9, mono:true, color:DIM, parent:g });
+}
+function dimV(y1, y2, x, text, o = {}) {
+  const g = o.parent || svg;
+  if (o.ext !== undefined) { line(o.ext, y1, x + (o.ext < x ? 4 : -4), y1, { color:DIM, w:.7, parent:g }); line(o.ext, y2, x + (o.ext < x ? 4 : -4), y2, { color:DIM, w:.7, parent:g }); }
+  line(x, y1, x, y2, { color:DIM, w:.9, parent:g }); tick(x, y1, { parent:g }); tick(x, y2, { parent:g });
+  label(x - 5, (y1 + y2) / 2, text, { size:o.size || 9, mono:true, color:DIM, rotate:-90, parent:g });
+}
+function mark(x, y, letter) { // hole-schedule mark
+  const g = el('g'); el('circle', { cx:x, cy:y, r:7, fill:'#fff', stroke:INK, 'stroke-width':1 }, g); label(x, y + 3.5, letter, { size:8, mono:true, parent:g }); return g;
+}
+
+/* ---------- frame + heading ---------- */
+el('rect', { x:20, y:20, width:1560, height:1040, fill:'#fff', stroke:INK, 'stroke-width':2 });
+label(40, 56, 'PORTABLE FILL STATION — GENERAL ARRANGEMENT & PLATE DRILLING', { size:15, anchor:'start', weight:700 });
+label(40, 76, 'PELICAN 1550 · PANEL PLATE 460 × 350 × 4 mm · DIMENSIONS IN mm · PLATE DATUM = BACK-LEFT CORNER, X RIGHT, Y TOWARDS THE OPERATOR', { size:9.5, anchor:'start', color:MUTED });
+label(40, 94, 'BSD-PFS-003 · REV A · 2026-09-04 · PLAN 1:? NTS — SCALE BAR BELOW · HOLE SIZES [CONFIRM] CUT TO THE VENDOR DRAWING', { size:9, anchor:'start', mono:true, color:MUTED });
+
+/* =========================================================
+   PLAN VIEW — 1.5 px per mm; plate datum at (150, 230)
+========================================================= */
+const S = 1.3, OX = 150, OY = 230;
+const px = (x) => OX + x * S, py = (y) => OY + y * S;
+const PLATE_W = 460, PLATE_D = 350;
+/* case exterior + interior (plate sits 6.5 mm from the side walls, 5 mm from back/front) */
+const caseG = grp('Pelican 1550 — exterior 525 × 412 mm, interior 473 × 360 mm at the rim; walls taper towards the floor, measure before cutting');
+el('rect', { x:px(-32.5), y:py(-31), width:525*S, height:412*S, rx:14, fill:'#f3f5f7', stroke:INK, 'stroke-width':2 }, caseG);
+el('rect', { x:px(-6.5), y:py(-5), width:473*S, height:360*S, rx:6, fill:'#fafbfc', stroke:INK, 'stroke-width':1.2 }, caseG);
+label(px(460), py(-16), 'CASE INTERIOR 473 × 360 (RIM) · EXTERIOR 525 × 412', { size:8, color:MUTED, anchor:'end', parent:caseG });
+label(px(230), py(372), 'FRONT · HANDLE · OPERATOR SIDE', { size:8, color:MUTED, parent:caseG });
+label(px(-20), py(175), 'LEFT', { size:8, color:MUTED, rotate:-90, parent:caseG });
+/* plate */
+const plate = grp('Panel plate — 460 × 350 × 4 mm Al 5052-H32 / 6061-T6, R10 corners, anodised, engraved; top face 30 mm below the rim on four Ø16 × 112 standoffs');
+el('rect', { x:px(0), y:py(0), width:PLATE_W*S, height:PLATE_D*S, rx:15, fill:'#e9ecef', stroke:INK, 'stroke-width':2.2 }, plate);
+/* colour bands (engraved, paint-filled) */
+const COLS = [ { x:60, c:GAS.o2, gas:'O₂' }, { x:135, c:GAS.he, gas:'He' }, { x:210, c:GAS.air, gas:'AIR' } ];
+COLS.forEach(k => el('rect', { x:px(k.x-6), y:py(45), width:12*S, height:(305-45)*S, fill:k.c, 'fill-opacity':.28, stroke:'none' }));
+el('rect', { x:px(270), y:py(318), width:(450-270)*S, height:10*S, fill:GAS.mix, 'fill-opacity':.28, stroke:'none' });
+label(px(360), py(338), 'MIX · BOOSTER LOOP & PRODUCT', { size:7.5, color:MUTED });
+/* gauges A */
+COLS.forEach((k, i) => {
+  const g = grp(`PI-0${i+1} — 63 mm ${k.gas} supply gauge · hole A Ø67 · at (${k.x}, 75) · U-clamp behind the plate`);
+  el('circle', { cx:px(k.x), cy:py(75), r:33.5*S, fill:'none', stroke:HID, 'stroke-width':1, 'stroke-dasharray':'4 3' }, g);   // Ø67 cut-out
+  el('circle', { cx:px(k.x), cy:py(75), r:31.5*S, fill:'#fff', stroke:INK, 'stroke-width':1.6 }, g);                          // Ø63 bezel
+  el('circle', { cx:px(k.x), cy:py(75), r:24*S, fill:'none', stroke:INK, 'stroke-width':.8 }, g);
+  label(px(k.x), py(72), `PI-0${i+1}`, { size:8.5, mono:true, parent:g }); label(px(k.x), py(83), k.gas, { size:8, color:MUTED, parent:g });
+  mark(px(k.x) + 40, py(75) - 40, 'A');
+});
+/* digital gauge D */
+{ const g = grp('PI-04 — digital master gauge, upright on a ¼ in bulkhead adaptor · hole D Ø14.5 · at (380, 75) · screen faces the operator');
+  el('rect', { x:px(380-28), y:py(75-13), width:56*S, height:26*S, rx:3, fill:'#fff', stroke:INK, 'stroke-width':1.6 }, g);
+  el('circle', { cx:px(380), cy:py(75), r:7.25*S, fill:'none', stroke:HID, 'stroke-width':1, 'stroke-dasharray':'4 3' }, g);
+  label(px(380), py(72), 'PI-04', { size:8.5, mono:true, parent:g }); label(px(380), py(82), 'DIGITAL · MASTER', { size:7.5, color:MUTED, parent:g });
+  mark(px(380) + 48, py(75) - 26, 'D'); }
+/* needle valves B */
+const NVS = [ { x:60, t:'NV-01', s:'O₂' }, { x:135, t:'NV-02', s:'He' }, { x:210, t:'NV-03', s:'AIR' }, { x:320, t:'NV-04', s:'DIRECT' }, { x:400, t:'NV-05', s:'TO BOOSTER' } ];
+NVS.forEach(v => {
+  const g = grp(`${v.t} ${v.s} — needle valve, panel nut · hole B Ø14.5 · at (${v.x}, 185) · knob Ø38, body 70 below the plate`);
+  el('circle', { cx:px(v.x), cy:py(185), r:19*S, fill:'none', stroke:HID, 'stroke-width':1, 'stroke-dasharray':'4 3' }, g); // knob envelope
+  el('circle', { cx:px(v.x), cy:py(185), r:7.25*S, fill:'#fff', stroke:INK, 'stroke-width':1.6 }, g);                       // hole
+  label(px(v.x), py(214), v.t, { size:8.5, mono:true, parent:g }); label(px(v.x), py(223), v.s, { size:7.5, color:MUTED, parent:g });
+});
+mark(px(60) - 36, py(185) - 24, 'B');
+/* bleed V-01 (B) */
+{ const g = grp('V-01 — fill-line bleed, needle valve · hole B Ø14.5 · at (425, 235)');
+  el('circle', { cx:px(425), cy:py(235), r:19*S, fill:'none', stroke:HID, 'stroke-width':1, 'stroke-dasharray':'4 3' }, g);
+  el('circle', { cx:px(425), cy:py(235), r:7.25*S, fill:'#fff', stroke:INK, 'stroke-width':1.6 }, g);
+  label(px(425), py(263), 'V-01', { size:8.5, mono:true, parent:g }); label(px(425), py(272), 'BLEED', { size:7.5, color:MUTED, parent:g }); }
+/* couplings C */
+const QCS = [ { x:60, t:'QC-01', s:'O₂ IN', c:GAS.o2 }, { x:135, t:'QC-02', s:'He IN', c:GAS.he }, { x:210, t:'QC-03', s:'AIR IN', c:GAS.air },
+              { x:285, t:'QC-04', s:'BOOSTER OUT', c:GAS.mix }, { x:360, t:'QC-05', s:'BOOSTER IN', c:GAS.mix }, { x:435, t:'QC-06', s:'PRODUCT', c:GAS.mix } ];
+QCS.forEach(q => {
+  const g = grp(`${q.t} ${q.s} — FAV FDQRCO2 socket on a ¼ in NPT bulkhead adaptor · hole C Ø14.5 · at (${q.x}, 290) · socket Ø≈30, ≈60 above the plate, adaptor ≈30 below`);
+  el('circle', { cx:px(q.x), cy:py(290), r:15*S, fill:'#fff', stroke:INK, 'stroke-width':1.6 }, g);
+  el('circle', { cx:px(q.x), cy:py(290), r:7.25*S, fill:'none', stroke:HID, 'stroke-width':1, 'stroke-dasharray':'4 3' }, g);
+  el('circle', { cx:px(q.x), cy:py(290), r:13.5*S, fill:'none', stroke:q.c, 'stroke-width':3 }, g); // key ring colour
+  label(px(q.x), py(316), q.t, { size:8.5, mono:true, parent:g }); label(px(q.x), py(325), q.s, { size:7, color:MUTED, parent:g });
+});
+mark(px(60) - 36, py(290) + 20, 'C');
+/* standoff bolts E */
+[[14,14],[446,14],[14,336],[446,336]].forEach(([x,y]) => { const g = grp(`Standoff bolt M6 · hole E Ø6.5 · at (${x}, ${y}) · Ø16 × 112 standoff to the base plate`); el('circle', { cx:px(x), cy:py(y), r:3.25*S, fill:'#fff', stroke:INK, 'stroke-width':1.2 }, g); });
+mark(px(14) + 14, py(14) + 14, 'E');
+/* vent bulkhead F in the back wall */
+{ const g = grp('VB-01 — ¼ in tube bulkhead union through the case BACK WALL at x = 20, 100 mm above the floor · hole F Ø11.5 · deflector outside; the only hole in the case');
+  el('circle', { cx:px(20), cy:py(-18), r:5.75*S, fill:'#fff', stroke:INK, 'stroke-width':1.4 }, g);
+  label(px(20) + 14, py(-15), 'VB-01 · IN BACK WALL · 100 ABOVE FLOOR', { size:7.5, anchor:'start', color:MUTED, parent:g });
+  mark(px(20) - 20, py(-18), 'F'); }
+/* section line A-A through the O₂ column */
+{ const x = px(60); line(x, py(-42), x, py(392), { color:DIM, w:.9, dash:'14 6' });
+  [py(-42), py(392)].forEach(y => { el('path', { d:`M${x-10},${y} L${x+10},${y}`, stroke:INK, 'stroke-width':2.4 }); });
+  label(x - 16, py(-38), 'A', { size:11, weight:700 }); label(x - 16, py(396), 'A', { size:11, weight:700 }); }
+/* datum marker */
+el('path', { d:`M${px(0)},${py(0)} m-14,0 l28,0 m-14,-14 l0,28`, stroke:RED, 'stroke-width':1.2 });
+label(px(0) - 18, py(0) - 8, 'DATUM 0,0', { size:7.5, color:RED, anchor:'end' });
+
+/* dimensions — top: pitch chain along x */
+const DY1 = py(-56);
+[0, 60, 135, 210, 285, 360, 435, 460].reduce((a, b) => { dimH(px(a), px(b), DY1, String(b - a), { ext: py(0) }); return b; });
+dimH(px(0), px(460), py(-74), '460', { ext: undefined });
+/* bottom: ordinate values for the odd columns */
+const DY2 = py(410);
+[[320,'320'],[380,'380'],[400,'400'],[425,'425']].forEach(([x, t]) => { line(px(x), py(350), px(x), DY2 - 4, { color:DIM, w:.7, dash:'3 3' }); label(px(x), DY2 + 10, t, { size:9, mono:true, color:DIM }); });
+line(px(0), DY2, px(460), DY2, { color:DIM, w:.9 }); tick(px(0), DY2); label(px(0), DY2 + 10, '0', { size:9, mono:true, color:DIM });
+label(px(230), DY2 + 24, 'ORDINATES FROM DATUM · x', { size:7.5, color:MUTED });
+/* left: rows along y */
+const DX1 = px(-56);
+[0, 75, 185, 290, 350].reduce((a, b) => { dimV(py(a), py(b), DX1, String(b - a), { ext: px(0) }); return b; });
+dimV(py(0), py(350), px(-74), '350');
+/* right: ordinate for V-01 and standoff rows */
+const DX2 = px(482);
+[[14,'14'],[235,'235'],[336,'336']].forEach(([y, t]) => { line(px(460), py(y), DX2 - 4, py(y), { color:DIM, w:.7, dash:'3 3' }); label(DX2 + 14, py(y) + 3, t, { size:9, mono:true, color:DIM }); });
+line(DX2, py(0), DX2, py(350), { color:DIM, w:.9 }); tick(DX2, py(0));
+label(DX2 + 10, py(175), 'ORDINATES · y', { size:7.5, color:MUTED, rotate:-90 });
+/* scale bar */
+line(px(0), py(438), px(100), py(438), { color:INK, w:3 }); line(px(100), py(438), px(200), py(438), { color:HID, w:3 });
+label(px(0), py(452), '0', { size:8, mono:true }); label(px(100), py(452), '100', { size:8, mono:true }); label(px(200), py(452), '200 mm', { size:8, mono:true });
+label(px(300), py(450), 'PLAN — LOOKING DOWN INTO THE OPEN CASE', { size:9, anchor:'start', weight:700 });
+
+/* =========================================================
+   SECTION A-A — 1.2 px per mm; case exterior bottom-left at (1020, 490)
+========================================================= */
+const T = 1.35, SX = 960, SB = 520;                  // SB = exterior bottom (floor outside)
+const sx = (mm) => SX + mm * T, sy = (mm) => SB - mm * T;   // mm measured from exterior bottom / back wall outside
+label(1290, 150, 'SECTION A-A — THROUGH THE O₂ COLUMN (x = 60), LOOKING LEFT · BACK WALL AT LEFT, OPERATOR AT RIGHT', { size:9.5, weight:700 });
+label(1290, 166, 'FLOOR 10 · BODY 149 INSIDE · LID 44 INSIDE · WALLS 26 · PLATE TOP 129 ABOVE THE OUTSIDE BOTTOM = 30 BELOW THE RIM', { size:7.5, color:MUTED });
+label(1290, 180, '¼" TUBE RUNS ≥15 ABOVE THE BASE PLATE, CLIPPED EVERY 200 · BODIES BELOW THE PLATE SHOWN DASHED', { size:7.5, color:MUTED });
+const sec = grp('Section through the case: floor 10, walls 26, body 149 inside, lid 44 inside (shown closed, dashed). Base plate 3 on the floor, Ø16 × 112 standoffs, plate 4 → plate top 129 above the outside bottom = 30 below the rim.');
+/* body: floor + two walls */
+el('rect', { x:sx(0), y:sy(10), width:412*T, height:10*T, fill:'#d5dce3', stroke:INK, 'stroke-width':1.6 }, sec);
+el('rect', { x:sx(0), y:sy(159), width:26*T, height:149*T, fill:'#d5dce3', stroke:INK, 'stroke-width':1.6 }, sec);
+el('rect', { x:sx(386), y:sy(159), width:26*T, height:149*T, fill:'#d5dce3', stroke:INK, 'stroke-width':1.6 }, sec);
+/* lid closed, dashed */
+el('rect', { x:sx(0), y:sy(214), width:412*T, height:55*T, fill:'none', stroke:INK, 'stroke-width':1.2, 'stroke-dasharray':'6 4' }, sec);
+el('rect', { x:sx(26), y:sy(203), width:360*T, height:44*T, fill:'none', stroke:HID, 'stroke-width':.8, 'stroke-dasharray':'3 3' }, sec);
+label(sx(90), sy(196), 'LID CLOSED — 44 INSIDE', { size:8, color:MUTED, parent:sec });
+/* base plate + standoffs + panel plate */
+el('rect', { x:sx(41), y:sy(13), width:330*T, height:3*T, fill:'#b9bec4', stroke:INK, 'stroke-width':1 }, sec);
+[[45],[367]].forEach(([y]) => el('rect', { x:sx(y-8), y:sy(125), width:16*T, height:112*T, fill:'#c9ced3', stroke:INK, 'stroke-width':1 }, sec));
+el('rect', { x:sx(31), y:sy(129), width:350*T, height:4*T, fill:'#9ca3aa', stroke:INK, 'stroke-width':1.4 }, sec);
+label(sx(206), sy(24), 'BASE PLATE 3 · Ø16 × 112 STANDOFFS · 112 CLEAR UNDER THE PLATE', { size:7.5, color:MUTED, parent:sec });
+/* components in section: y positions on the plate → section x = 31 + y */
+function secItem(yPlate, wAbove, hAbove, wBelow, hBelow, tag, tip) {
+  const g = grp(tip); const cx = sx(31 + yPlate);
+  el('rect', { x:cx - wAbove*T/2, y:sy(129 + hAbove), width:wAbove*T, height:hAbove*T, fill:'#fff', stroke:INK, 'stroke-width':1.4 }, g);
+  el('rect', { x:cx - wBelow*T/2, y:sy(125), width:wBelow*T, height:hBelow*T, fill:'#fff', stroke:INK, 'stroke-width':1.2, 'stroke-dasharray':'3 2' }, g);
+  label(cx, sy(129 + hAbove + 6), tag, { size:8, mono:true, parent:g });
+}
+secItem(75, 66, 14, 60, 35, 'PI-01', 'PI-01 in section — bezel 14 above the plate, gauge body ≈35 below, U-clamp');
+secItem(185, 38, 55, 30, 70, 'NV-01', 'NV-01 in section — knob and bonnet 55 above the plate, valve body ≈70 below; the tallest body under the plate');
+secItem(290, 30, 60, 22, 30, 'QC-01', 'QC-01 in section — FAV FDQRCO2 socket on a ¼ in NPT bulkhead adaptor, ≈60 above the plate; adaptor ≈30 below; whip plug from above');
+/* vent bulkhead through the back wall */
+{ const g = grp('VB-01 — vent bulkhead through the back wall, 100 above the floor; deflector points down and away outside the case');
+  el('rect', { x:sx(-14), y:sy(114), width:40*T, height:8*T, fill:'#fff', stroke:INK, 'stroke-width':1.2 }, g);
+  el('path', { d:`M${sx(-14)},${sy(114)} L${sx(-22)},${sy(104)} L${sx(-8)},${sy(104)} Z`, fill:'#fff', stroke:INK, 'stroke-width':1.2 }, g);
+  line(sx(26), sy(110), sx(31 + 250), sy(110), { color:HID, w:1, dash:'4 3', parent:g });
+  label(sx(-18), sy(124), 'VB-01', { size:8, mono:true, parent:g, anchor:'end' }); }
+/* tube run indication under the plate */
+line(sx(31 + 110), sy(95), sx(31 + 340), sy(95), { color:HID, w:1.6, dash:'6 3' });
+label(sx(31 + 345), sy(98), 'TUBE', { size:7, color:MUTED, anchor:'start' });
+/* dimensions on the right of the section */
+const SDX = sx(430);
+[[0,129,'129 TO PLATE TOP'],[129,159,'30'],[159,214,'55 LID']].forEach(([a,b,t]) => dimV(sy(b), sy(a), SDX, t, { ext: sx(412), size:8 }));
+label(SDX, sy(222), '214 CLOSED', { size:8, mono:true, color:DIM });
+dimH(sx(0), sx(412), sy(-14), '412 EXTERIOR', { ext: sy(0) });
+dimH(sx(26), sx(386), sy(-30), '360 INTERIOR');
+label(sx(-2), sy(-46), 'BACK', { size:8, color:MUTED }); label(sx(414), sy(-46), 'FRONT', { size:8, color:MUTED });
+
+/* =========================================================
+   HOLE SCHEDULE (right, below the section)
+========================================================= */
+el('rect', { x:1000, y:604, width:580, height:196, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(1012, 624, 'HOLE SCHEDULE — PLATE UNLESS NOTED', { size:9.5, anchor:'start', mono:true });
+[['MARK','Ø mm','QTY','FOR','AT (x, y) mm'],
+ ['A','67','3','PI-01..03 GAUGE CUT-OUT (WIKA NS 63)','(60/135/210, 75)'],
+ ['B','14.5*','6','NV-01..05 + V-01 PANEL NUT','(60/135/210/320/400, 185) · (425, 235)'],
+ ['C','14.5*','6','QC-01..06 ¼" NPT BULKHEAD ADAPTOR (FAV FDQRCO2 SOCKET ON TOP)','(60/135/210/285/360/435, 290)'],
+ ['D','14.5*','1','PI-04 ¼" BULKHEAD ADAPTOR','(380, 75)'],
+ ['E','6.5','4','M6 STANDOFF BOLTS','(14/446, 14/336)'],
+ ['F','11.5*','1','VB-01 ¼" BULKHEAD UNION — CASE BACK WALL','x = 20 · 100 ABOVE FLOOR'],
+].forEach((r, i) => {
+  const y = 644 + i * 17; const hdr = i === 0;
+  [[1012,'start'],[1052,'start'],[1100,'start'],[1140,'start'],[1400,'start']].forEach(([x, an], j) => label(x, y, r[j], { size: hdr ? 7.5 : 8, anchor:an, mono: hdr || j < 3, color: hdr ? MUTED : INK, weight: hdr ? 600 : 500 }));
+});
+label(1012, 784, '* NOMINAL — CUT TO THE VENDOR DRAWING OF THE PURCHASED PART. DRILL PILOT HOLES UNTIL PARTS ARE IN HAND.', { size:7.5, anchor:'start', color:RED });
+
+/* =========================================================
+   NOTES · BOM · TITLE BLOCK
+========================================================= */
+el('rect', { x:40, y:850, width:720, height:190, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(52, 870, 'GENERAL NOTES', { size:9.5, anchor:'start', mono:true });
+[
+  '1. DIMENSIONS IN mm. PLATE DATUM = BACK-LEFT CORNER; x TO THE RIGHT, y TOWARDS THE OPERATOR. PLAN LOOKS DOWN INTO THE OPEN CASE.',
+  '2. PLATE 460 × 350 × 4 Al 5052-H32 / 6061-T6, R10 CORNERS, DEBURR, ANODISE. ENGRAVE TAGS 4 mm HIGH; BANDS 12 WIDE, ENGRAVED 0.3, PAINT-FILLED.',
+  '3. HOLES MARKED * ARE NOMINAL — OPEN TO THE VENDOR DRAWING AFTER PARTS ARRIVE. A AND E ARE CATALOGUE VALUES. ANODISE AFTER DRILLING.',
+  '4. NO HOLES IN THE CASE EXCEPT F. THE ASSEMBLY LIFTS OUT ON ITS 3 mm BASE PLATE; STANDOFFS Ø16 × 112, M6 BOTH ENDS.',
+  '5. TUBE RUNS UNDER THE PLATE PER BSD-PFS-001. KEEP ≥15 ABOVE THE BASE PLATE, CLIP EVERY 200, NO TUBE UNDER THE GAUGE U-CLAMPS.',
+  '6. O₂-CLEAN ASSEMBLY: STANDARD PARTS DEGREASED, FKM / PTFE SEALS, KRYTOX ONLY, LINT-FREE GLOVES. INSPECT EVERY FITTING UNDER UV + WHITE LIGHT (G93).',
+  '7. LEAK TEST WITH DRY N₂: INLET LEGS + MANIFOLD 330 bar; FILL LINE 250 bar WITH PSV-01 BLANKED. RESTORE PSV-01, CHECK LIFT ≈220 bar.',
+  '8. PURGE WITH N₂ AND CAP EVERY COUPLING BEFORE THE CASE IS CLOSED. LID CLOSES OVER 55 mm KNOBS, ≈60 mm COUPLINGS AND THE 80 mm DIGITAL GAUGE (30 + 44 = 74 — CHECK PI-04).',
+  '9. WEIGHT ESTIMATE ≈20 kg COMPLETE WITH WHIPS. REV A FOR FABRICATION REVIEW.',
+].forEach((s, i) => label(52, 889 + i * 15.5, s, { size:8, anchor:'start', weight:500 }));
+
+el('rect', { x:780, y:850, width:440, height:190, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(792, 870, 'PARTS TO MAKE / BUY FOR THE ARRANGEMENT', { size:9.5, anchor:'start', mono:true });
+[
+  ['PANEL PLATE', '1', '460 × 350 × 4 Al · ANODISED · ENGRAVED'],
+  ['BASE PLATE', '1', '440 × 330 × 3 Al · 4 × M6 BOSSES'],
+  ['STANDOFFS', '4', 'Ø16 × 112 Al · M6 BOTH ENDS'],
+  ['FASTENERS', '8', 'M6 × 12 A4 SS CAP + WASHER'],
+  ['BULKHEAD ADAPTORS', '6', '¼" NPT M/F THROUGH-PLATE, FOR THE FDQRCO2 SOCKETS'],
+  ['GAUGE CLAMPS', '3', 'WIKA U-CLAMP NS 63'],
+  ['CASE', '1', 'PELICAN 1550 · ONE Ø11.5 HOLE (F)'],
+  ['LID ORGANISER', '1', 'FOAM / NYLON · 4 WHIPS + PIGTAIL SETS'],
+  ['COLOUR FILL', '—', 'O₂ GREEN · He BROWN · AIR BLUE · MIX BLACK'],
+].forEach(([k, q, v], i) => { const y = 890 + i * 17; label(792, y, k, { size:8, anchor:'start', mono:true, color:MUTED }); label(905, y, q, { size:8, mono:true }); label(925, y, v, { size:8, anchor:'start', weight:500 }); });
+
+const TB = el('g');
+el('rect', { x:1240, y:850, width:340, height:190, fill:'#fff', stroke:INK, 'stroke-width':2 }, TB);
+el('path', { d:'M1240,906 L1580,906 M1240,962 L1580,962 M1410,962 L1410,998 M1240,998 L1580,998 M1352,998 L1352,1040 M1482,998 L1482,1040', stroke:INK, 'stroke-width':1 }, TB);
+label(1254, 874, 'PORTABLE FILL STATION', { size:13, anchor:'start', weight:700 });
+label(1254, 893, 'MODULE A · PANEL IN PELICAN 1550', { size:9.5, anchor:'start', color:MUTED });
+label(1254, 928, 'GENERAL ARRANGEMENT & PLATE DRILLING', { size:10, anchor:'start' });
+label(1254, 946, 'PLAN · SECTION A-A · HOLE SCHEDULE · mm', { size:8, anchor:'start', color:MUTED });
+label(1254, 978, 'DWG NO', { size:7.5, anchor:'start', color:MUTED }); label(1254, 991, 'BSD-PFS-003', { size:10, anchor:'start', mono:true });
+label(1422, 978, 'REV', { size:7.5, anchor:'start', color:MUTED }); label(1422, 991, 'A', { size:10, anchor:'start', mono:true });
+label(1254, 1016, 'DATE', { size:7.5, anchor:'start', color:MUTED }); label(1254, 1029, '2026-09-04', { size:9.5, anchor:'start', mono:true });
+label(1366, 1016, 'DRAWN BY', { size:7.5, anchor:'start', color:MUTED }); label(1366, 1029, 'DONARUN DAS', { size:9.5, anchor:'start', mono:true });
+label(1496, 1016, 'SCALE', { size:7.5, anchor:'start', color:MUTED }); label(1496, 1029, 'SEE BAR', { size:9.5, anchor:'start', mono:true });
+
+/* ---------- tooltips ---------- */
+const tipEl = document.createElement('div'); tipEl.className = 'pid-tip'; document.body.appendChild(tipEl);
+function renderTip(txt) { tipEl.textContent = ''; const sep = txt.indexOf(' — '); if (sep > 0 && sep < 44) { const tag = document.createElement('span'); tag.className = 'tip-tag'; tag.textContent = txt.slice(0, sep); tipEl.appendChild(tag); tipEl.appendChild(document.createTextNode(txt.slice(sep + 3))); } else tipEl.appendChild(document.createTextNode(txt)); }
+function placeTip(x, y) { const r = tipEl.getBoundingClientRect(); let left = x + 14, top = y + 16; if (left + r.width > innerWidth - 8) left = x - r.width - 14; if (top + r.height > innerHeight - 8) top = y - r.height - 12; tipEl.style.left = left + 'px'; tipEl.style.top = top + 'px'; }
+let current = null;
+svg.addEventListener('pointermove', (e) => { const g = e.target.closest('[data-tip]'); if (!g) { tipEl.style.opacity = 0; current = null; return; } if (g !== current) { current = g; renderTip(g.getAttribute('data-tip')); } tipEl.style.opacity = 1; placeTip(e.clientX, e.clientY); });
+svg.addEventListener('pointerleave', () => { tipEl.style.opacity = 0; current = null; });
+})();
+</script>
+</body>
+</html>

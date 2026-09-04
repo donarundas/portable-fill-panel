@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Portable Fill Station — Concept and decision record</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <style>
+  :root{--page:#eef1f4;--text:#253242;--muted:#5b6b7d;--card:#fff;--rule:#d5dce3;--accent:#1d4ed8}
+  @media (prefers-color-scheme: dark){:root{--page:#161b22;--text:#dbe3ec;--muted:#93a3b5;--card:#1e2530;--rule:#333d4a;--accent:#7ea6ff}}
+  body{margin:0;background:var(--page);color:var(--text);font:15px/1.6 "Helvetica Neue",Arial,sans-serif}
+  header#title-block-header,main,.nav{max-width:920px;margin:0 auto;padding:0 24px}
+  .nav{padding-top:28px;font:600 12.5px/1 "Helvetica Neue",Arial,sans-serif}.nav a{display:inline-block;border:1px solid var(--rule);background:var(--card);color:var(--text);padding:8px 14px;border-radius:8px;text-decoration:none;margin:0 6px 6px 0}.nav a:hover{border-color:var(--accent);color:var(--accent)}
+  h1.title{font-size:27px;letter-spacing:-.4px;margin:18px 0 6px}h1,h2,h3{text-wrap:balance}h2{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--rule);padding-bottom:8px;margin:38px 0 14px;font-family:ui-monospace,Menlo,monospace}
+  table{border-collapse:collapse;width:100%;font-size:13.2px;display:block;overflow-x:auto}th,td{text-align:left;padding:7px 12px 7px 0;border-bottom:1px solid var(--rule);vertical-align:top}th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:var(--card);padding:1px 4px;border-radius:4px}a{color:var(--accent)}
+  footer{max-width:920px;margin:44px auto 60px;padding:14px 24px 0;border-top:1px solid var(--rule);font-size:12.5px;color:var(--muted);text-align:center}
+  </style>
+</head>
+<body>
+<div class="nav"><a href="index.html">← P&amp;ID REV A</a><a href="portable-cascade-pid.html">Cascade (002)</a><a href="portable-ga.html">GA (003)</a><a href="boq.html">BOQ</a><a href="portable-3d.html">3D</a><a href="concept.html">Concept</a><a href="sourcing/SOURCING.html">Sourcing</a></div>
+<header id="title-block-header">
+<h1 class="title">Portable Fill Station — Concept and decision
+record</h1>
+</header>
+<h1 id="portable-fill-station--concept-and-decision-record">Portable
+Fill Station — Concept and decision record</h1>
+<p><strong>Drawings:</strong> BSD-PFS-001 REV A — fill panel P&amp;ID
+(<a href="portable-pid.html">portable-pid.html</a>) · BSD-PFS-002 —
+cascade pigtail manifolds (<a
+href="portable-cascade-pid.html">portable-cascade-pid.html</a>) ·
+BSD-PFS-003 — general arrangement &amp; plate drilling (<a
+href="portable-ga.html">portable-ga.html</a>) · 3D arrangement pass 1,
+on hold (<a href="portable-3d.html">portable-3d.html</a>) · superseded
+sketch SK-A (<a
+href="portable-pid-sketch.html">portable-pid-sketch.html</a>) · live BOQ
+(<a href="boq.html">boq.html</a>, shared store at <a
+href="https://claude.ai/code/artifact/84d72dae-c9cd-4820-afc1-2cd6e2a3a71b">https://claude.ai/code/artifact/84d72dae-c9cd-4820-afc1-2cd6e2a3a71b</a>).
+<strong>Companion to:</strong> the fixed-plant <a
+href="../station-pid.html">station P&amp;ID</a> (BSD-PID-001) — same
+symbols, colours and O₂-clean rules. <strong>Status 2026-09-04:</strong>
+concept → sketch → REV A → 002 → 003 GA issued; decisions locked (§7);
+Indian sourcing done (<code>sourcing/</code>); 3D parked at the user's
+request in favour of the 2D GA.</p>
+<h2 id="1-what-it-is">1. What it is</h2>
+<p>A partial-pressure decant and blending panel in a Pelican 1550. Three
+keyed, self-venting high-pressure (HP) quick couplings bring in an
+oxygen cascade, a helium cascade and an air cylinder; a common manifold
+feeds either the fill line directly or an external booster in its own
+case. Fully mechanical: no power except the digital master gauge.</p>
+<p><strong>Who it is for:</strong> a CCR / technical-diving expedition
+or dive boat filling small O₂ and diluent cylinders (3 L, AL40,
+twinsets) from a handful of supply cylinders where no fixed plant
+exists. <strong>Its one job:</strong> put a measured partial pressure of
+each gas into a cylinder, safely, from supplies that are slowly running
+down.</p>
+<p><strong>Form-factor references:</strong> Kirby Morgan KMACS-5 and
+Amron 8225 portable air panels (HP inlets on hoses, valves and gauges on
+a plate in the case) and Pelican-cased O₂/He analysers.</p>
+<h2 id="2-basis-of-design-locked">2. Basis of design (locked)</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gases</td>
+<td>O₂, He, air; product = any mix of the three</td>
+</tr>
+<tr>
+<td>Supply pressures</td>
+<td>O₂ 150 bar (Indian 46.7 L jumbo, 147 bar at 15 °C) · He 150 or 200
+bar (specify at order) · air 232 bar (300 possible, not the Indian
+norm)</td>
+</tr>
+<tr>
+<td>Supply connections</td>
+<td>Indian cylinders per IS 3224:2002, <strong>gas-specific</strong>: O₂
+outlet No. 3 G 5/8 RH female → bullnose nut + nipple · He outlet No. 20
+G 3/4 RH male → female nut · air outlet No. 19 G 7/8 RH. Pigtails per
+BSD-PFS-002 [CONFIRM on the supplier's cylinders]</td>
+</tr>
+<tr>
+<td>Inlet legs, manifold, booster loop</td>
+<td>see supply pressure ≤300 bar; source-limited, no relief needed;
+rated 414 bar</td>
+</tr>
+<tr>
+<td>Fill zone</td>
+<td><strong>200 bar fill · PSV-01 set 220 bar</strong>, downstream of
+NV-04 and CV-04</td>
+</tr>
+<tr>
+<td>Booster</td>
+<td><strong>USUN XBD30-OL</strong> in its own Pelican: 30:1, drive ≤8
+bar, inlet ≥30 bar, max out ≈240 bar, O₂-cleaned. Drive from a scuba
+first stage set ≈7 bar so stall stays below 220 bar [CONFIRM curve]</td>
+</tr>
+<tr>
+<td>Component rating</td>
+<td>≥ 414 bar (6000 psi), except needle valves at 344 bar (Swagelok
+SS-1RS4 class) — accepted 2026-09-04 against a 300 bar maximum
+supply</td>
+</tr>
+<tr>
+<td>Cleanliness</td>
+<td>whole panel O₂-service. Standard Swagelok or FAV parts,
+oxygen-cleaned in-house: degrease, FKM/PTFE seals (aftermarket Viton
+where an O-ring exists), Krytox/Christo-Lube only, UV inspection to ASTM
+G93 / CGA G-4.1. No factory SC-11 variants (decided 2026-09-04)</td>
+</tr>
+<tr>
+<td>Valves in the gas path</td>
+<td>needle valves only (slow opening). No ball valves (ASTM G88
+adiabatic-compression case)</td>
+</tr>
+<tr>
+<td>Tubing</td>
+<td>¼ in × 0.065 in wall 316 SS</td>
+</tr>
+<tr>
+<td>Gauges</td>
+<td>dry, O₂-cleaned; glycerine fill prohibited. Master gauge
+digital</td>
+</tr>
+<tr>
+<td>Case</td>
+<td>Pelican 1550: interior 47.3 × 36.0 × 19.6 cm, body depth 14.9 cm,
+lid 4.4 cm, 4.8 kg. Panel only — booster and analyser travel in their
+own cases</td>
+</tr>
+<tr>
+<td>Environment</td>
+<td>tropical, salt air; lid open during operation; PSV vents outside the
+case</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-arrangement-five-groups">3. Arrangement (five groups)</h2>
+<ol type="1">
+<li><strong>Inlet legs ×3</strong> — keyed quick coupling with
+integrated vent → supply gauge → needle valve (isolate + meter) → check
+valve → common manifold. The check valve stops a high-pressure supply
+pushing gas back into a lower-pressure one.</li>
+<li><strong>Common manifold</strong> — short header, no instruments; at
+supply pressure in booster mode, cylinder pressure in direct mode.</li>
+<li><strong>Selector</strong> — NV-04 DIRECT to the fill line; NV-05 to
+the booster-suction coupling. Boosted gas returns through QC-05 and
+CV-04 into the fill line. Both shut = panel isolated.</li>
+<li><strong>Fill line</strong> — digital master gauge PI-04, relief
+PSV-01 (220 bar) discharging through vent bulkhead VB-01, product
+coupling QC-06.</li>
+<li><strong>Venting</strong> — bleed V-01 on the fill line just before
+QC-06 empties the whole panel through VB-01, inlet legs included (their
+gas flows forward through the open needle valve and check valve into the
+manifold); each cascade chain has a bleed after its last tee; the fill
+whip bleeds at its DIN adaptor. The couplings need no vent of their
+own.</li>
+</ol>
+<h2 id="4-cascade-pigtail-manifolds-bsd-pfs-002">4. Cascade pigtail
+manifolds (BSD-PFS-002)</h2>
+<p>Reference: Allegro 9891-17 style HP pigtail cascade kit, redrawn for
+Indian IS 3224 cylinder outlets, which differ by gas (O₂ G 5/8 bullnose,
+He G 3/4 male outlet, air G 7/8) and so guard against cross-connection
+at the cylinder as well as at the keyed plug. PM-01 (O₂, 3 cylinders)
+and PM-02 (He, 2 cylinders): per cylinder the IS 3224 nut and nipple for
+that gas, a 0.6 m O₂-clean HP pigtail and a check valve into a chain of
+¼ in tees linked by 0.4 m hoses (no manifold bar — catalogue parts,
+lighter, the Allegro form); one bleed at the chain end; one outlet whip
+with the keyed plug for the panel. PM-03 (air) is a single pigtail with
+the air key. Details on the sheet.</p>
+<h2 id="5-lean-choice-vs-alternative-as-decided">5. Lean choice vs.
+alternative (as decided)</h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Decided</th>
+<th>Alternative considered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cascade inlets</td>
+<td>1 keyed inlet per gas; cascade on an external pigtail manifold</td>
+<td>2 inlets per gas on the panel</td>
+</tr>
+<tr>
+<td>Booster switching</td>
+<td>two needle valves + one check valve</td>
+<td>three-way ball valve (fast opening, rejected)</td>
+</tr>
+<tr>
+<td>Bleeds</td>
+<td>one fill-line bleed V-01 (vents the inlet legs through the open
+needle valves) + one bleed per cascade chain after the last tee</td>
+<td>per-leg bleed valves (SK-A) and vent-on-disconnect couplings (both
+dropped)</td>
+</tr>
+<tr>
+<td>Quick couplings</td>
+<td>FAV FDQRCO2 double-check poppet, ¼ in NPT F, 6000 psi, 316 SS,
+standard part with seals swapped in-house; ports labelled and
+colour-banded, not keyed</td>
+<td>keyed, self-venting import couplings (WEH, Stäubli ROX) —
+unnecessary once the bleeds exist</td>
+</tr>
+<tr>
+<td>Cross-feed protection</td>
+<td>check valve per inlet and per pigtail</td>
+<td>procedure only</td>
+</tr>
+<tr>
+<td>Cascade collector</td>
+<td>chain of ¼ in tees + short hoses</td>
+<td>machined manifold bar (first draft, dropped at review)</td>
+</tr>
+<tr>
+<td>Master gauge</td>
+<td>digital</td>
+<td>100 mm analogue class 1.0</td>
+</tr>
+<tr>
+<td>Booster drive</td>
+<td>scuba cylinder through a first stage</td>
+<td>small LP compressor</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-removed-from-scope-2026-09-04">6. Removed from scope
+(2026-09-04)</h2>
+<p>Inline analyser module and diver gas panel. The analysis port drawn
+on SK-A is deleted. Analysis is done at the cylinder valve with a
+hand-held analyser that travels in its own case.</p>
+<h2 id="7-decisions-locked-2026-09-04">7. Decisions locked
+2026-09-04</h2>
+<ol type="1">
+<li>Fill 200 bar, PSV-01 220 bar. 2. One keyed inlet per gas. 3.
+Integrated coupling vents; fill-line bleed V-01 before QC-06; fill-whip
+bleed at the DIN adaptor. 4. USUN XBD30-OL booster. 5. Pelican 1550 for
+the panel only. 6. Digital master gauge.</li>
+<li>Cascade pigtails with IS 3224 gas-specific cylinder ends
+(BSD-PFS-002). 8. Needle valves at 344 bar accepted.</li>
+<li>Standard Swagelok or FAV parts, cleaned in-house; no factory oxygen
+variants.</li>
+<li>Selector stays two needle valves (NV-04 DIRECT, NV-05 TO BOOSTER); a
+3-way ball valve was assessed and declined — it would move the
+adiabatic-compression safeguard from hardware into an
+equalise-before-switching procedure.</li>
+<li>Quick couplings: FAV FDQRCO2, not keyed — labels and colour bands
+instead; no vent-on-disconnect, because V-01 and the chain bleeds vent
+every segment before a coupling is parted. Cascade chain bleed moved to
+just before the outlet whip; the single air pigtail gets its own bleed.
+WEH quote kept as a comparison only.</li>
+</ol>
+<h2 id="8-confirm-before-purchase-confirm">8. Confirm before purchase
+[CONFIRM]</h2>
+<ul>
+<li>FAV FDQRCO2 couplings: gas service and leak-tightness at 300 bar
+with helium, seal materials, poppet spring material, locking mechanism
+(FAV's page does not state it), cycle life, mating/parting rules.
+Fallback: DIN 477 handwheels on the panel.</li>
+<li>In-house oxygen-cleaning procedure written down before the first
+oxygen fill (degrease, seal swap, Krytox, UV inspection). Trim material
+at the throttling points.</li>
+<li>PSV-01 spring range at 220 bar and capacity against the XBD30-OL
+flow; XBD30-OL stall curve for the R-01 set point.</li>
+<li>Pelican 1550 depth against the gauge and valve stack (mock-up; see
+the 3D pass).</li>
+<li>Cylinder outlets on the supplier's actual cylinders (IS 3224 No. 3 /
+20 / 19 assumed; legacy and imported valves exist); whip hose O₂ rating
+at 300 bar.</li>
+</ul>
+<h2 id="9-sourcing-2026-09-04--see-sourcingsourcingmd">9. Sourcing
+(2026-09-04) — see <a
+href="sourcing/SOURCING.html">sourcing/SOURCING.md</a></h2>
+<ul>
+<li>Valves, fittings, tube: Swagelok Bangalore / Bombay with factory
+<code>-SC11</code> O₂ cleaning; Parker India second. FAV (Mumbai) can
+machine the metal half (10 000 psi panel-mount needle valve, 6000 psi
+check valves, manifolds) but publishes no oxygen cleaning anywhere.</li>
+<li>Gauges: WIKA 232.50 NS 63 dry with the oxygen option; digital WIKA
+CPG1500 (oxygen option) or Keller LEO5. Divesoft makes no pressure gauge
+— the earlier reference to one is withdrawn.</li>
+<li>Booster: no USUN dealer in India; Maximator India (Navi Mumbai)
+makes an oxygen-rated rebreather booster.</li>
+<li>Hoses: Hydroflex Pipe (Ahmedabad) 400 bar DN6 assemblies; O₂
+cleaning is an RFQ question. Bullnose and IS 3224 nut/nipple sets are
+ordinary catalogue stock.</li>
+<li>Quick couplings: FAV FDQRCO2 decided 2026-09-04; addendum sent under
+RFQ PFS-2609-03. WEH quote kept for comparison.</li>
+</ul>
+<h2 id="references">References</h2>
+<ul>
+<li>USUN XBD30-OL: <a
+href="https://www.diverightinscuba.com/xbd30-ol-booster-pump.html">https://www.diverightinscuba.com/xbd30-ol-booster-pump.html</a>
+· XB30-OL spec: <a
+href="https://www.diverightinscuba.com/usun-xb30-ol-booster-pump.html">https://www.diverightinscuba.com/usun-xb30-ol-booster-pump.html</a></li>
+<li>Pelican 1550: <a
+href="https://www.pelican.com/us/en/product/cases/1550">https://www.pelican.com/us/en/product/cases/1550</a></li>
+<li>Allegro 9891-17 cascade kit: <a
+href="https://www.industrialsafetyproducts.com/allegro-9891-17-airline-cascade-kits-hp-flexible-pigtail/">https://www.industrialsafetyproducts.com/allegro-9891-17-airline-cascade-kits-hp-flexible-pigtail/</a></li>
+<li>WEH TW17/TW117: <a
+href="https://www.weh.com/media/downloads/brief-overview/gas-brief-overview-en.pdf">https://www.weh.com/media/downloads/brief-overview/gas-brief-overview-en.pdf</a>
+· Stäubli RBL: <a
+href="https://www.staubli.com/content/dam/fcs/brochures/products/rbl/rbl-all-fluids-stainless-steel-couplings-staubli-en.pdf">https://www.staubli.com/content/dam/fcs/brochures/products/rbl/rbl-all-fluids-stainless-steel-couplings-staubli-en.pdf</a></li>
+<li>Swagelok N-series: <a
+href="https://www.swagelok.com/downloads/webcatalogs/en/ms-01-168.pdf">https://www.swagelok.com/downloads/webcatalogs/en/ms-01-168.pdf</a>
+· CH check valves: <a
+href="https://www.swagelok.com/downloads/webcatalogs/EN/MS-01-176.PDF">https://www.swagelok.com/downloads/webcatalogs/EN/MS-01-176.PDF</a>
+· R3A/R4 relief: <a
+href="https://www.swagelok.com/downloads/webcatalogs/en/MS-01-141.PDF">https://www.swagelok.com/downloads/webcatalogs/en/MS-01-141.PDF</a></li>
+<li>KMACS-5 manual: <a
+href="https://www.kirbymorgan.com/sites/default/files/2021-06/KMACS-5-Manual.pdf">https://www.kirbymorgan.com/sites/default/files/2021-06/KMACS-5-Manual.pdf</a>
+· Amron 8225-HP: <a
+href="http://www.amronintl.com/media/PDF/products/8225-HP_MANUAL_12-12.pdf">http://www.amronintl.com/media/PDF/products/8225-HP_MANUAL_12-12.pdf</a></li>
+</ul>
+<footer>Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026</footer>
+</body>
+</html>

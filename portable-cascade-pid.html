@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Cascade Pigtail Manifolds P&amp;ID</title>
+<style>
+  :root { --page:#eef1f4; --page-text:#253242; --page-muted:#5b6b7d; --card:#ffffff; --rule:#d5dce3; --accent:#1d4ed8; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --accent:#7ea6ff; } }
+  :root[data-theme="dark"] { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --accent:#7ea6ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--page-text); font: 15px/1.55 "Helvetica Neue", Arial, ui-sans-serif, sans-serif; }
+  header.page { max-width: 1180px; margin: 0 auto; padding: 34px 24px 18px; }
+  header.page { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  header.page .head-text { flex: 1 1 560px; min-width: 0; }
+  .nav-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 4px; }
+  .nav-row a, .print-btn { border: 1px solid var(--rule); background: var(--card); color: var(--page-text); padding: 8px 14px; border-radius: 8px; font: 600 12.5px/1 inherit; text-decoration: none; white-space: nowrap; cursor: pointer; }
+  .nav-row a:hover, .print-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .print-btn:focus-visible, .nav-row a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  header.page .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--page-muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  header.page h1 { font-size: 27px; margin: 6px 0 4px; letter-spacing: -.4px; text-wrap: balance; }
+  header.page p { margin: 0; color: var(--page-muted); max-width: 72ch; }
+  .sheet-wrap { max-width: 1660px; margin: 18px auto 0; padding: 0 24px; }
+  .sheet-scroll { overflow-x: auto; background: var(--card); border: 1px solid var(--rule); border-radius: 6px; box-shadow: 0 1px 3px rgba(10,20,35,.08); }
+  .sheet-scroll svg { display: block; min-width: 1600px; width: 100%; height: auto; background: #fff; }
+  .rotate-hint { display: none; }
+  @media (orientation: portrait) and (hover: none) { .rotate-hint { display: block; max-width: 1660px; margin: 12px auto 0; padding: 10px 24px; font-size: 13px; color: var(--page-muted); text-align: center; } }
+  main.doc { max-width: 1180px; margin: 0 auto; padding: 26px 24px 80px; }
+  main.doc h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--page-muted); border-bottom: 1px solid var(--rule); padding-bottom: 8px; margin: 38px 0 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  main.doc p { max-width: 72ch; }
+  .works { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px 28px; }
+  .works section h3 { font-size: 15.5px; margin: 0 0 6px; }
+  .works section h3 .n { display: inline-block; min-width: 22px; color: var(--accent); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; }
+  .works section p { margin: 0; font-size: 13.8px; }
+  .tag { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.3px; white-space: nowrap; }
+  table { border-collapse: collapse; width: 100%; font-size: 13.2px; }
+  .tbl-wrap { overflow-x: auto; }
+  th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--page-muted); font-weight: 600; }
+  td.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12.3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  ul.list { font-size: 13.8px; padding-left: 22px; max-width: 80ch; }
+  ul.list li { margin-bottom: 8px; }
+  .refs { font-size: 13px; color: var(--page-muted); padding-left: 20px; }
+  .refs li { margin-bottom: 7px; }
+  .refs a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  .page-foot { margin-top: 44px; padding-top: 14px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--page-muted); text-align: center; }
+  .page-foot strong { color: var(--page-text); font-weight: 600; }
+  .pid-tip { position: fixed; z-index: 50; pointer-events: none; max-width: 320px; padding: 10px 13px; border-radius: 9px; background: #1c2530; color: #eef2f6; font-size: 12.5px; line-height: 1.5; box-shadow: 0 6px 18px rgba(10,20,35,.35); opacity: 0; transition: opacity .1s; }
+  .pid-tip .tip-tag { display: block; margin-bottom: 3px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11.5px; font-weight: 600; letter-spacing: .03em; color: #ffd08a; }
+  @page { size: A4 landscape; margin: 9mm; }
+  @media print {
+    body { background: #fff; }
+    header.page, .rotate-hint, .pid-tip { display: none; }
+    .sheet-wrap { max-width: none; margin: 0; padding: 0; }
+    .sheet-scroll { border: none; box-shadow: none; border-radius: 0; overflow: visible; }
+    .sheet-scroll svg { min-width: 0; width: auto; height: 186mm; margin: 0 auto; }
+    main.doc { break-before: page; max-width: none; padding: 0; column-count: 2; column-gap: 26px; }
+    .works { display: block; } .works section { break-inside: avoid; margin-bottom: 5px; }
+    .works section h3 { font-size: 11.5px; } .works section p { font-size: 9px; line-height: 1.36; }
+    table { font-size: 8.3px; } th, td { padding: 1.5px 6px 1.5px 0; } ul.list, .refs { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+<header class="page">
+  <div class="head-text">
+  <div class="eyebrow">BSD-PFS-002 · REV A · 2026-09-04 · Cascade pigtail manifolds PM-01 · PM-02 · PM-03</div>
+  <h1>Portable Fill Station — cascade pigtail manifolds</h1>
+  <p>The supply side of the fill panel: an Allegro-style high-pressure pigtail cascade kit redrawn for Indian industrial cylinders, which use IS 3224 threaded outlets rather than CGA fittings: a G 5/8 bullnose for oxygen, G 3/4 for helium, G 7/8 for air. Each cylinder gets the nut and nipple for its gas, a 0.6 m oxygen-clean pigtail and a check valve into a chain of ¼ in tees linked by short hoses; the chain ends in a bleed and the outlet whip with its labelled plug for the panel coupling. No manifold bar.</p>
+  </div>
+  <div class="nav-row">
+    <a href="portable-pid.html">← Panel P&amp;ID (001)</a>
+    <a href="portable-ga.html">GA drawing (003) →</a>
+    <a href="boq.html">BOQ</a>
+    <button class="print-btn" type="button" onclick="window.print()">Print / PDF</button>
+  </div>
+</header>
+
+<div class="sheet-wrap">
+  <div class="sheet-scroll"><svg id="pid" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" role="img" aria-label="Cascade pigtail drawings: PM-01 oxygen with three cylinders, PM-02 helium with two, PM-03 air with one, each with IS 3224 cylinder connections, pigtails, check valves into a chain of tees with a bleed before the outlet whip and a labelled plug; plus a section detail of the oxygen bullnose connection"></svg></div>
+</div>
+<p class="rotate-hint">Rotate your phone to landscape to read the sheet. Hover or tap a symbol for its duty.</p>
+
+<main class="doc">
+  <h2>How the cascade is used</h2>
+  <div class="works">
+    <section><h3><span class="n">1</span>Rig</h3>
+      <p>Stand the cylinders, fit each cylinder nut and nipple by hand plus a quarter turn with the spanner, no washer, no grease, no tape. The O₂ set has G 5/8 bullnoses, the He set G 3/4 female nuts, the air set G 7/8, so a set only fits its own gas. The tee chain rests across the valve guards. Plug the outlet whip into the panel port with the matching colour band and label — the plugs are not keyed, so the label is the check.</p></section>
+    <section><h3><span class="n">2</span>Cascade</h3>
+      <p>Open one cylinder valve at a time, the lowest pressure first, and decant until it equalises with the fill cylinder. Shut it, open the next. The check valves <span class="tag">CV-11..13</span> stop gas moving cylinder-to-cylinder if two valves are ever open together.</p></section>
+    <section><h3><span class="n">3</span>Boost</h3>
+      <p>When even the fullest cylinder is below the fill target, switch the panel to booster mode. The booster draws through the same bar and sweeps a supply cylinder down to about 30 bar, which is what makes helium affordable.</p></section>
+    <section><h3><span class="n">4</span>Change a cylinder</h3>
+      <p>Shut all cylinder valves, open the chain bleed <span class="tag">V-11</span> next to the whip, wait for the panel supply gauge to read zero, then loosen the nut or part the plug. Never crack a bullnose nut under pressure. About 14 L of gas is lost per bleed at 150 bar — the price of the check valves.</p></section>
+  </div>
+
+  <h2>Parts per set</h2>
+  <div class="tbl-wrap"><table>
+    <thead><tr><th>Item</th><th>Class / rating</th><th>PM-01 O₂</th><th>PM-02 He</th><th>PM-03 air</th></tr></thead>
+    <tbody>
+      <tr><td>Cylinder nut + nipple per IS 3224:2002</td><td>brass, metal-to-metal seat, ¼ in NPT or hose-tail outlet, O₂-cleaned; catalogue stock at Indian gas-fittings makers</td><td class="mono">3 × outlet No. 3, G 5/8 RH bullnose</td><td class="mono">2 × outlet No. 20, G 3/4 RH female nut</td><td class="mono">1 × outlet No. 19, G 7/8 RH (or DIN 232 for scuba)</td></tr>
+      <tr><td>Pigtail 0.6 m</td><td>¼ in PTFE-lined, SS-braid HP hose · 400 bar WP · swaged ends · O₂-clean</td><td class="mono">3</td><td class="mono">2</td><td class="mono">1</td></tr>
+      <tr><td>Link hose 0.4 m</td><td>same hose class, tee to tee</td><td class="mono">2</td><td class="mono">1</td><td class="mono">—</td></tr>
+      <tr><td>Check valve</td><td>¼ in NPT · 316 SS · 6000 psi · low cracking · Swagelok CH or FAV FAVCV class · cleaned in-house</td><td class="mono">3</td><td class="mono">2</td><td class="mono">1</td></tr>
+      <tr><td>Union tee ¼ in</td><td>316 SS · 6000 psi · Swagelok SS-400-3 or FAV class, degreased — one per cylinder leg</td><td class="mono">3</td><td class="mono">2</td><td class="mono">—</td></tr>
+      <tr><td>Bleed needle valve, after the last tee</td><td>¼ in · 316 SS · Swagelok 1RS4 class (344 bar) · cleaned in-house · outlet pointed away</td><td class="mono">1</td><td class="mono">1</td><td class="mono">1</td></tr>
+      <tr><td>Outlet whip 1.5 m + quick-coupling plug</td><td>same hose class · FAV FDQRCO2 plug, ¼ in NPT, labelled and colour-banded (not keyed)</td><td class="mono">1 · O₂ label</td><td class="mono">1 · He label</td><td class="mono">1 · AIR label</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Why it is drawn this way</h2>
+  <ul class="list">
+    <li><b>IS 3224, not CGA — and gas-specific.</b> Indian industrial cylinders use IS 3224:2002 outlets: No. 3 (G 5/8 RH female, bullnose) for oxygen, No. 20 (G 3/4 RH male) for helium, argon and nitrogen, No. 19 (G 7/8 RH) for air. Under BS 341 helium shares the oxygen No. 3 outlet, which is where the earlier "identical fittings" assumption came from; India differs. The cylinder end is therefore the one mechanical guard against cross-connection; the panel plugs are labelled and colour-banded, not keyed. <b>[CONFIRM on the supplier's actual cylinders]</b>.</li>
+    <li><b>Tees, not a manifold bar.</b> The first draft had a machined manifold bar. A chain of catalogue ¼ in tees linked by 0.4 m hoses does the same job: same check valves, same single bleed, same outlet whip, no custom block, no strap, less weight, and a fourth cylinder is one more tee. It is also what the Allegro reference kit does. Changed at review 2026-09-04.</li>
+    <li><b>Cylinder valves are the isolation.</b> A needle valve in each leg would let the operator select without reaching the cylinder valve, at the cost of three valves per set. Not fitted; drawn as an option in note 7.</li>
+    <li><b>Check valves stay.</b> Cheap, and they make the one-valve-at-a-time rule forgiving instead of critical.</li>
+    <li><b>One bleed per chain, next to the whip.</b> With the cylinder valves shut, every pigtail and the whip vent through the check valves into the chain and out of the bleed, so no per-pigtail bleed is needed and the coupling needs no vent of its own. The single air pigtail gets its own bleed for the same reason.</li>
+    <li><b>No gauge on the chain.</b> The panel's supply gauge reads it the moment the whip is plugged in.</li>
+  </ul>
+
+  <h2>References</h2>
+  <ul class="refs">
+    <li><a href="https://www.industrialsafetyproducts.com/allegro-9891-17-airline-cascade-kits-hp-flexible-pigtail/" target="_blank" rel="noopener">Allegro 9891-17 HP flexible pigtail airline cascade kit</a> — the reference form: HP pigtails from each cylinder into a manifold with a single outlet, CGA cylinder fittings for the US market.</li>
+    <li>IS 3224:2002 (valve fittings for compressed gas cylinders) outlet table — No. 3 G 5/8 RH bullnose (oxygen), No. 20 G 3/4 RH male (He, Ar, N₂), No. 19 G 7/8 RH (air); cross-checked against the AIGA 098/17 country table. Details in <a href="sourcing/indian-hp-components.html">sourcing/indian-hp-components.md</a>.</li>
+    <li><a href="https://www.swagelok.com/downloads/webcatalogs/EN/MS-01-176.PDF" target="_blank" rel="noopener">Swagelok CH check valves</a> — 6000 psig class for the pigtail check valves.</li>
+  </ul>
+
+  <footer class="page-foot">Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026 · BSD-PFS-002 REV A — for fabrication review</footer>
+</main>
+
+<script>
+(() => {
+'use strict';
+const NS = 'http://www.w3.org/2000/svg';
+const svg = document.getElementById('pid');
+const INK = '#1c2530', MUTED = '#5b6b7d', RED = '#b91c1c';
+const CLS = { hp:{ stroke:'#1d4ed8' }, o2:{ stroke:'#15803d' }, he:{ stroke:'#8a5a2b' }, mix:{ stroke:'#1c2530' }, vnt:{ stroke:'#8b93a1', dash:'5 5' }, sig:{ stroke:'#7c8794', dash:'2 4' } };
+
+function el(name, attrs = {}, parent = svg) { const n = document.createElementNS(NS, name); for (const k in attrs) n.setAttribute(k, attrs[k]); parent.appendChild(n); return n; }
+function grp(title) { const g = el('g'); if (title) { g.setAttribute('data-tip', title); g.style.cursor = 'help'; } return g; }
+function pts2d(pts) { return 'M' + pts.map(p => p.join(',')).join(' L'); }
+function pipe(pts, kind, w = 2.4, parent = svg) { const c = CLS[kind] || { stroke: INK }; const a = { d: pts2d(pts), fill:'none', stroke:c.stroke, 'stroke-width':w, 'stroke-linejoin':'round' }; if (c.dash) a['stroke-dasharray'] = c.dash; return el('path', a, parent); }
+function hose(d, kind, parent = svg) { // flexible hose: thick colour with a white core
+  const c = (CLS[kind] || { stroke: INK }).stroke;
+  el('path', { d, fill:'none', stroke:c, 'stroke-width':5.5, 'stroke-linecap':'round' }, parent);
+  el('path', { d, fill:'none', stroke:'#fff', 'stroke-width':2, 'stroke-linecap':'round' }, parent);
+}
+function arrow(x, y, dir, color, parent = svg) { const s = 7; const d = { r:[[x-s,y-s],[x+s,y],[x-s,y+s]], l:[[x+s,y-s],[x-s,y],[x+s,y+s]], u:[[x-s,y+s],[x,y-s],[x+s,y+s]], d:[[x-s,y-s],[x,y+s],[x+s,y-s]] }[dir]; el('path', { d: pts2d(d)+'Z', fill: color, stroke:'none' }, parent); }
+function label(x, y, str, o = {}) {
+  const t = el('text', { x, y, fill: o.color || INK, 'font-size': o.size || 11.5, 'text-anchor': o.anchor || 'middle', 'font-family': o.mono ? 'ui-monospace,Menlo,monospace' : 'Helvetica Neue,Arial,sans-serif', 'font-weight': o.weight || (o.mono ? 500 : 600), 'letter-spacing': o.ls || (o.mono ? '0' : '.04em') }, o.parent || svg);
+  t.textContent = str; return t;
+}
+function valve(x, y, orient, kind, tag, name, opts = {}) {
+  const g = grp(name || tag); const c = (CLS[kind]||{stroke:INK}).stroke; const s = 9;
+  const shape = orient === 'h' ? `M${x-s},${y-s} L${x},${y} L${x-s},${y+s} Z M${x+s},${y-s} L${x},${y} L${x+s},${y+s} Z` : `M${x-s},${y-s} L${x},${y} L${x+s},${y-s} Z M${x-s},${y+s} L${x},${y} L${x+s},${y+s} Z`;
+  el('path', { d: shape, fill:'#fff', stroke:c, 'stroke-width':2 }, g);
+  if (opts.needle) { const st = orient === 'h' ? [[x, y],[x, y-16],[x-5, y-16],[x+5, y-16]] : [[x, y],[x-16, y],[x-16, y-5],[x-16, y+5]]; el('path', { d:`M${st[0]} L${st[1]}`, stroke:c, 'stroke-width':2 }, g); el('path', { d:`M${st[2]} L${st[3]}`, stroke:c, 'stroke-width':2 }, g); }
+  if (tag) label(x, y + (opts.tagDy ?? 24), tag, { size:9.5, mono:true, parent:g });
+  if (opts.sub) label(x, y + (opts.tagDy ?? 24) + 11, opts.sub, { size:8.5, color:MUTED, parent:g });
+  return g;
+}
+function checkV(x, y, orient, kind, dir = 1, tag, name) {
+  const g = grp(name || (tag ? `${tag} — check valve (non-return)` : 'Check valve')); const c = (CLS[kind]||{stroke:INK}).stroke; const s = 8;
+  if (orient === 'h') { const x0 = x - dir*s, x1 = x + dir*s; el('path', { d:`M${x0},${y-s} L${x1},${y} L${x0},${y+s} Z`, fill:'#fff', stroke:c, 'stroke-width':2 }, g); el('path', { d:`M${x1},${y-s-1} L${x1},${y+s+1}`, stroke:c, 'stroke-width':2.6 }, g); if (tag) label(x, y + 22, tag, { size:9, mono:true, parent:g }); }
+  else { const y0 = y - dir*s, y1 = y + dir*s; el('path', { d:`M${x-s},${y0} L${x},${y1} L${x+s},${y0} Z`, fill:'#fff', stroke:c, 'stroke-width':2 }, g); el('path', { d:`M${x-s-1},${y1} L${x+s+1},${y1}`, stroke:c, 'stroke-width':2.6 }, g); if (tag) label(x + 14, y + 4, tag, { size:9, mono:true, anchor:'start', parent:g }); }
+  return g;
+}
+function qcPlug(x, y, kind, tag, sub, name) { // male half on the whip end
+  const g = grp(name || tag); const c = (CLS[kind]||{stroke:INK}).stroke;
+  el('rect', { x:x-9, y:y-9, width:18, height:18, rx:3, fill:'#fff', stroke:c, 'stroke-width':2.2 }, g);
+  el('rect', { x:x+9, y:y-4, width:9, height:8, fill:c, stroke:'none' }, g);
+  el('path', { d:`M${x-3},${y-5} L${x-3},${y+5}`, stroke:c, 'stroke-width':1.8 }, g);
+  if (tag) label(x, y + 28, tag, { size:9, mono:true, parent:g });
+  if (sub) label(x, y + 39, sub, { size:8, color:MUTED, parent:g });
+  return g;
+}
+/* industrial cylinder with valve, handwheel and side outlet; returns the outlet point */
+function cylinder(cx, yv, color, name, parent) {
+  const g = grp(name); if (parent) parent.appendChild(g);
+  el('rect', { x:cx-22, y:yv+18, width:44, height:126, rx:11, fill:'#fff', stroke:color, 'stroke-width':2.2 }, g);
+  el('path', { d:`M${cx-16},${yv+18} L${cx-7},${yv+6} L${cx+7},${yv+6} L${cx+16},${yv+18}`, fill:'#fff', stroke:color, 'stroke-width':2 }, g); // shoulder
+  el('rect', { x:cx-6, y:yv-12, width:12, height:18, fill:'#fff', stroke:INK, 'stroke-width':1.8 }, g); // valve body
+  el('rect', { x:cx-11, y:yv-18, width:22, height:6, rx:2, fill:INK, stroke:'none' }, g); // handwheel
+  el('rect', { x:cx+6, y:yv-8, width:12, height:8, fill:'#fff', stroke:INK, 'stroke-width':1.8 }, g); // outlet boss
+  el('rect', { x:cx+18, y:yv-9, width:10, height:10, fill:'#e6e9ec', stroke:INK, 'stroke-width':1.6 }, g); // bullnose nut
+  return [cx+28, yv-4];
+}
+/* one manifold set */
+function manifoldSet(o) {
+  const c = CLS[o.kind].stroke;
+  label(o.tx, o.ty, o.title, { size:10.5, weight:700 });
+  label(o.tx, o.ty + 14, o.subtitle, { size:8, color:MUTED });
+  const barY = o.barY, barX0 = o.cols[0], barX1 = o.cols[o.cols.length-1];
+  const chain = grp(`${o.tag} tee chain — ¼ in union tees linked by 0.4 m O₂-clean hoses; each cylinder leg enters a tee branch through its check valve; first tee capped, bleed after the last tee, then the outlet whip. No manifold bar: catalogue parts, lighter, any cylinder count.`);
+  for (let i = 0; i < o.cols.length - 1; i++) hose(`M${o.cols[i]},${barY} L${o.cols[i+1]},${barY}`, o.kind, chain);
+  o.cols.forEach(x => { el('circle', { cx:x, cy:barY, r:5, fill:'#fff', stroke:c, 'stroke-width':2.2 }, chain); el('circle', { cx:x, cy:barY, r:1.8, fill:c, stroke:'none' }, chain); });
+  label(barX0 + 16, barY - 16, `TEE CHAIN · ¼" UNION TEES · ${o.cols.length-1} × 0.4 m LINK HOSE · 6000 psi · O₂-CLEAN`, { size:7.5, color:MUTED, anchor:'start', parent:chain });
+  o.cols.forEach((x, i) => {
+    const cx = x - 40, yv = o.yv;
+    const [ox, oy] = cylinder(cx, yv, c, `${o.cylName} ${i+1} — ${o.cylSpec}`);
+    hose(`M${ox},${oy} C${ox+22},${oy} ${x},${oy-6} ${x},${oy-26}`, o.kind);
+    label(cx, yv + 160, `${o.gas} CYL ${i+1}`, { size:8 });
+    label(x + 8, oy - 8, `P-${o.n}${i+1}`, { size:8, mono:true, anchor:'start', color:MUTED });
+    checkV(x, oy - 40, 'v', o.kind, -1, `CV-${o.n}${i+1}`, `CV-${o.n}${i+1} — stops cylinder-to-cylinder transfer and back-fill; flow up into the bar`);
+    pipe([[x, oy-48],[x, barY+5]], o.kind, 2.2);
+  });
+  /* first tee: run port capped */
+  pipe([[barX0-5, barY],[barX0-16, barY]], o.kind, 2.2);
+  el('path', { d:`M${barX0-16},${barY-6} L${barX0-16},${barY+6}`, stroke:c, 'stroke-width':2.6 });
+  /* bleed after the last tee, next to the outlet whip */
+  pipe([[barX1+5, barY],[barX1+24, barY]], o.kind, 2.2);
+  valve(barX1+34, barY, 'h', o.kind, `V-${o.n}1`, `V-${o.n}1 — chain bleed after the last tee: with all cylinder valves shut, every pigtail and the outlet whip vent through here before a nut is loosened or the plug is parted`, { needle:true, sub:'BLEED' });
+  pipe([[barX1+34, barY-16],[barX1+34, barY-30]], 'vnt', 1.6);
+  arrow(barX1+34, barY-36, 'u', CLS.vnt.stroke);
+  /* outlet whip → labelled plug */
+  pipe([[barX1+44, barY],[barX1+62, barY]], o.kind, 2.2);
+  hose(`M${barX1+62},${barY} C${barX1+110},${barY-30} ${barX1+150},${barY+30} ${barX1+200},${barY}`, o.kind);
+  label(barX1+152, barY-32, `W-0${o.n} · 1.5 m O₂-CLEAN HP WHIP · 400 bar`, { size:7, color:MUTED });
+  arrow(barX1+212, barY, 'r', c);
+  qcPlug(barX1+230, barY, o.kind, `QC-0${o.n}P`, `LABEL ${o.gas} → PANEL QC-0${o.n}`, `QC-0${o.n}P — FAV FDQRCO2 plug, labelled and colour-banded ${o.gas}; not keyed — match the band on the panel port`);
+}
+
+/* ---------- frame, heading, legend ---------- */
+el('rect', { x:20, y:20, width:1560, height:960, fill:'#fff', stroke:INK, 'stroke-width':2 });
+label(40, 58, 'PORTABLE FILL STATION — CASCADE PIGTAIL MANIFOLDS PM-01 · PM-02 · PM-03', { size:15, anchor:'start', weight:700 });
+label(40, 78, 'SUPPLY SIDE OF BSD-PFS-001 · INDIAN CYLINDERS, IS 3224 OUTLETS: O₂ No. 3 G5/8 RH BULLNOSE · He No. 20 G3/4 RH (MALE OUTLET) · AIR No. 19 G7/8 RH', { size:9.5, anchor:'start', color:MUTED });
+label(40, 96, 'BSD-PFS-002 · REV A · 2026-09-04 · FOR FABRICATION REVIEW', { size:9, anchor:'start', mono:true, color:MUTED });
+const LX = 1000, LY = 30;
+el('rect', { x:LX, y:LY, width:570, height:96, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(LX + 12, LY + 18, 'LEGEND', { size:9.5, anchor:'start', mono:true });
+[['o2','OXYGEN'],['he','HELIUM'],['hp','AIR'],['vnt','VENT']].forEach(([k, name], i) => { const y = LY + 34 + i * 14; pipe([[LX + 14, y],[LX + 54, y]], k, 2.2); label(LX + 62, y + 3.5, name, { size:8, anchor:'start' }); });
+hose(`M${LX+170},${LY+38} L${LX+210},${LY+38}`, undefined); label(LX + 218, LY + 42, 'FLEXIBLE HP HOSE (PIGTAIL / WHIP)', { size:8, anchor:'start' });
+checkV(LX + 190, LY + 62, 'h', undefined, 1); label(LX + 218, LY + 66, 'CHECK VALVE (NON-RETURN)', { size:8, anchor:'start' });
+valve(LX + 190, LY + 86, 'h', undefined, '', 'Needle valve', { needle:true }); label(LX + 218, LY + 90, 'NEEDLE VALVE (BLEED)', { size:8, anchor:'start' });
+el('rect', { x:LX+435, y:LY+33, width:10, height:10, fill:'#e6e9ec', stroke:INK, 'stroke-width':1.6 }); label(LX + 452, LY + 42, 'IS 3224 NUT + NIPPLE', { size:8, anchor:'start' });
+qcPlug(LX + 440, LY + 64, undefined, '', '', 'Quick-coupling plug'); label(LX + 462, LY + 68, 'QC PLUG (FAV FDQRCO2)', { size:8, anchor:'start' });
+
+/* ---------- PM-01 oxygen ---------- */
+manifoldSet({ kind:'o2', gas:'O₂', n:1, tag:'PM-01', cols:[170, 290, 410], barY:210, yv:300, tx:330, ty:150,
+  title:'PM-01 · O₂ CASCADE PIGTAIL MANIFOLD', subtitle:'3 × 46.7 L · 150 bar · OUTLET No. 3 — G 5/8 RH BULLNOSE · ONE VALVE OPEN AT A TIME, LOWEST FIRST',
+  cylName:'O₂ cylinder', cylSpec:'46.7 L industrial oxygen, 150 bar (147 bar at 15 °C); IS 3224 outlet No. 3, G 5/8 RH female → male bullnose nut + nipple' });
+/* ---------- PM-02 helium ---------- */
+manifoldSet({ kind:'he', gas:'He', n:2, tag:'PM-02', cols:[210, 350], barY:530, yv:620, tx:330, ty:470,
+  title:'PM-02 · He CASCADE PIGTAIL MANIFOLD', subtitle:'2 × 47 L · 150 / 200 bar (SPECIFY AT ORDER) · OUTLET No. 20 — G 3/4 RH MALE, FEMALE NUT ON THE PIGTAIL · BOOSTER SWEEPS TO ~30 bar',
+  cylName:'He cylinder', cylSpec:'47 L helium, 150 or 200 bar; IS 3224 outlet No. 20, G 3/4 RH male valve outlet — the pigtail carries a female nut, not a bullnose' });
+
+/* ---------- PM-03 air — single pigtail ---------- */
+label(1000, 150, 'PM-03 · AIR PIGTAIL', { size:10.5, weight:700 });
+label(1000, 164, '1 × 47 L BANK (IS 3224 OUTLET No. 19 — G 7/8 RH) or SCUBA CYLINDER (DIN 232) · 232 bar (300)', { size:8, color:MUTED });
+{
+  const [ox, oy] = cylinder(880, 300, CLS.hp.stroke, 'Air cylinder — 47 L breathing-air bank (EN 12021) with IS 3224 outlet No. 19 (G 7/8 RH), or a scuba cylinder via a DIN 232 adaptor. 232 bar is the Indian norm');
+  label(880, 460, 'AIR CYL', { size:8 });
+  hose(`M${ox},${oy} C${ox+22},${oy} 920,${oy-6} 920,${oy-26}`, 'hp');
+  label(928, oy - 8, 'P-31', { size:8, mono:true, anchor:'start', color:MUTED });
+  checkV(920, oy - 40, 'v', 'hp', -1, 'CV-31', 'CV-31 — stops O₂ or He back-filling the air cylinder if the panel manifold is above air pressure');
+  pipe([[920, oy-48],[920, 230],[980, 230]], 'hp', 2.2);
+  valve(990, 230, 'h', 'hp', 'V-31', 'V-31 — bleed before the plug: vents the pigtail and whip with the cylinder valve shut', { needle:true, sub:'BLEED' });
+  pipe([[990, 214],[990, 200]], 'vnt', 1.6);
+  arrow(990, 194, 'u', CLS.vnt.stroke);
+  pipe([[1000, 230],[1016, 230]], 'hp', 2.2);
+  hose('M1016,230 C1056,200 1096,260 1136,230', 'hp');
+  label(1084, 198, 'W-03 · 1.5 m HP WHIP', { size:7, color:MUTED });
+  arrow(1148, 230, 'r', CLS.hp.stroke);
+  qcPlug(1166, 230, 'hp', 'QC-03P', 'LABEL AIR → PANEL QC-03', 'QC-03P — FAV FDQRCO2 plug, labelled AIR; not keyed');
+  /* DIN alternative inset */
+  const din = grp('Alternative cylinder end — DIN 232 (G5/8) handwheel for a scuba air cylinder; swap for the bullnose nipple');
+  el('rect', { x:960, y:330, width:120, height:60, fill:'none', stroke:INK, 'stroke-width':1, 'stroke-dasharray':'4 4' }, din);
+  el('circle', { cx:990, cy:360, r:14, fill:'#fff', stroke:INK, 'stroke-width':2 }, din);
+  el('path', { d:'M990,346 L990,374 M976,360 L1004,360', stroke:INK, 'stroke-width':1.6 }, din);
+  el('rect', { x:1004, y:355, width:14, height:10, fill:'#e6e9ec', stroke:INK, 'stroke-width':1.4 }, din);
+  label(1044, 356, 'ALT: DIN 232', { size:8, anchor:'middle', parent:din });
+  label(1044, 367, 'G5/8 HANDWHEEL', { size:7.5, color:MUTED, parent:din });
+  label(1044, 378, 'FOR SCUBA AIR', { size:7.5, color:MUTED, parent:din });
+}
+
+/* ---------- parts per set (top-right) ---------- */
+el('rect', { x:1220, y:140, width:350, height:320, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(1232, 160, 'PARTS PER SET', { size:9.5, anchor:'start', mono:true });
+[['', 'PM-01', 'PM-02', 'PM-03'],
+ ['CYLINDER NUT + NIPPLE (IS 3224)', '3', '2', '1*'],
+ ['CYLINDER-END THREAD (RH)', 'G5/8', 'G3/4', 'G7/8*'],
+ ['PIGTAIL 0.6 m ¼" O₂-CLEAN 400 bar', '3', '2', '1'],
+ ['CHECK VALVE ¼" NPT 6000 psi', '3', '2', '1'],
+ ['UNION TEE ¼" 6000 psi', '3', '2', '—'],
+ ['LINK HOSE 0.4 m ¼" O₂-CLEAN', '2', '1', '—'],
+ ['BLEED NEEDLE VALVE ¼"', '1', '1', '1'],
+ ['OUTLET WHIP 1.5 m', '1', '1', '1'],
+ ['QC PLUG LABEL', 'O₂', 'He', 'AIR'],
+ ['SET COLOUR CODE', 'GREEN', 'BROWN', 'BLUE'],
+].forEach((r, i) => {
+  const y = 184 + i * 18;
+  label(1232, y, r[0], { size:7.8, anchor:'start', weight: i ? 500 : 600, mono: i === 0 });
+  [1450, 1495, 1540].forEach((x, j) => label(x, y, r[j+1], { size:8, mono:true, color: i ? INK : MUTED }));
+});
+label(1232, 388, '* OR A DIN 232 ADAPTOR FOR A SCUBA CYLINDER.', { size:7.5, anchor:'start', color:MUTED });
+label(1232, 403, 'ALL WETTED PARTS O₂-SERVICE · G93 / G-4.1 CLEANED.', { size:7.5, anchor:'start', color:MUTED });
+label(1232, 418, 'HOSES: PTFE LINER · SS BRAID · SWAGED ENDS.', { size:7.5, anchor:'start', color:MUTED });
+label(1232, 433, 'TEE CHAIN RESTS ACROSS THE VALVE GUARDS — NO BAR, NO STRAP.', { size:7.5, anchor:'start', color:MUTED });
+label(1232, 448, 'PIGTAIL SETS COIL INTO THE PANEL LID ORGANISER.', { size:7.5, anchor:'start', color:MUTED });
+
+/* ---------- DETAIL A — bullnose connection section ---------- */
+el('rect', { x:800, y:470, width:770, height:300, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(1185, 492, 'DETAIL A — O₂ CYLINDER CONNECTION · IS 3224 OUTLET No. 3 · G 5/8 RH BULLNOSE · SECTION, NTS', { size:9.5, mono:true });
+const D = grp('Detail A — IS 3224 outlet No. 3: the valve outlet is a G 5/8 RH female bore with a cone seat at the back; the brass bullnose nipple seats metal-to-metal and the male nut screws into the valve and pushes on the nipple collar. No washer, no grease, no PTFE tape in oxygen service.');
+/* valve body + female outlet boss (internal thread) */
+el('rect', { x:880, y:560, width:120, height:140, rx:6, fill:'#f3f5f7', stroke:INK, 'stroke-width':2 }, D);
+label(940, 636, 'CYLINDER', { size:8.5, parent:D }); label(940, 648, 'VALVE', { size:8.5, parent:D });
+el('rect', { x:1000, y:598, width:92, height:64, fill:'#f3f5f7', stroke:INK, 'stroke-width':2 }, D);   // boss
+el('rect', { x:1012, y:612, width:80, height:36, fill:'#fff', stroke:INK, 'stroke-width':1.4 }, D);      // bore
+for (let x = 1044; x < 1088; x += 6) { el('path', { d:`M${x},612 L${x+3},617 M${x},648 L${x+3},643`, stroke:INK, 'stroke-width':1 }, D); } // internal thread
+el('path', { d:'M1030,612 L1012,630 L1030,648 Z', fill:'#e6e9ec', stroke:INK, 'stroke-width':1.4 }, D);   // cone seat
+/* bullnose nipple: bulb on the seat, collar, shaft through the nut */
+el('circle', { cx:1025, cy:630, r:9, fill:'#d9c08a', stroke:INK, 'stroke-width':1.6 }, D);
+el('rect', { x:1032, y:617, width:10, height:26, fill:'#d9c08a', stroke:INK, 'stroke-width':1.4 }, D);   // collar
+el('rect', { x:1032, y:623, width:150, height:14, fill:'#d9c08a', stroke:INK, 'stroke-width':1.4 }, D);  // shaft
+/* male nut: threaded body inside the bore, hex head outside */
+el('rect', { x:1042, y:614, width:48, height:32, fill:'#cfd3d6', 'fill-opacity':.7, stroke:INK, 'stroke-width':1.6 }, D);
+el('rect', { x:1090, y:604, width:44, height:52, rx:3, fill:'#cfd3d6', 'fill-opacity':.7, stroke:INK, 'stroke-width':2 }, D);
+/* hose tail + ferrule + hose */
+el('rect', { x:1182, y:624, width:44, height:12, fill:'#d9c08a', stroke:INK, 'stroke-width':1.4 }, D);
+[1192, 1206, 1220].forEach(x => el('path', { d:`M${x},624 L${x-4},618 L${x+2},618 Z M${x},636 L${x-4},642 L${x+2},642 Z`, fill:INK, stroke:'none' }, D));
+el('rect', { x:1226, y:616, width:30, height:28, rx:3, fill:'#cfd3d6', stroke:INK, 'stroke-width':1.6 }, D);
+hose('M1256,630 L1400,630', 'o2', D);
+/* callouts */
+function callout(x0, y0, x1, y1, lines, anchor = 'start') {
+  el('path', { d:`M${x0},${y0} L${x1},${y1}`, stroke:CLS.sig.stroke, 'stroke-width':1.2, 'stroke-dasharray':'2 4' }, D);
+  lines.forEach((s, i) => label(x1 + (anchor === 'start' ? 4 : -4), y1 + 4 + i * 11, s, { size:8, anchor, parent:D, weight: i ? 500 : 600, color: i ? MUTED : INK }));
+}
+callout(1020, 598, 1000, 540, ['VALVE OUTLET — G 5/8 RH FEMALE (IS 3224 No. 3)', 'CONE SEAT AT THE BACK OF THE BORE'], 'end');
+callout(1112, 604, 1160, 540, ['NUT — G 5/8 RH MALE, SCREWS INTO THE VALVE', 'HAND TIGHT + ¼ TURN WITH THE SPANNER · BEARS ON THE COLLAR']);
+callout(1025, 639, 1000, 715, ['BULLNOSE NIPPLE — BRASS', 'METAL-TO-METAL SEAT · NO WASHER · NO GREASE · NO TAPE'], 'end');
+callout(1241, 644, 1300, 715, ['SWAGED HOSE TAIL ¼"', 'PTFE-LINED SS-BRAID HP HOSE · 400 bar WP · O₂-CLEAN']);
+label(1185, 758, 'He (No. 20, G 3/4 RH MALE → FEMALE NUT) AND AIR (No. 19, G 7/8 RH) DIFFER FROM O₂ — THE CYLINDER END IS THE ONLY MECHANICAL GUARD; PANEL PLUGS ARE LABELLED, NOT KEYED.', { size:7.4, color:RED });
+
+/* ---------- general notes ---------- */
+el('rect', { x:40, y:800, width:700, height:170, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(52, 820, 'GENERAL NOTES', { size:9.5, anchor:'start', mono:true });
+[
+  '1. ALL WETTED PARTS O₂-SERVICE: BRASS OR 316 SS, PTFE / FKM. STANDARD PARTS DEGREASED AND KRYTOX-LUBED IN-HOUSE (G93 / G-4.1). NO OIL, NO TAPE, NO WASHER.',
+  '2. PIGTAILS 0.6 m AND LINK HOSES 0.4 m, ¼" O₂-CLEAN HP HOSE, 400 bar WP; WHIPS 1.5 m. HOSE ENDS FACTORY-SWAGED, NOT FIELD-CRIMPED.',
+  '3. CHECK VALVES STOP CYLINDER-TO-CYLINDER TRANSFER AND BACK-FILL. THE CYLINDER VALVE IS THE ISOLATION.',
+  '4. CASCADE: OPEN ONE CYLINDER VALVE AT A TIME, LOWEST PRESSURE FIRST. THE BOOSTER SWEEPS A CYLINDER DOWN TO ~30 bar.',
+  '5. CYLINDER CHANGE: SHUT ALL CYLINDER VALVES, OPEN THE CHAIN BLEED, WAIT FOR ZERO ON THE PANEL GAUGE, THEN LOOSEN THE NUT.',
+  '    NEVER CRACK A NUT UNDER PRESSURE.',
+  '6. CYLINDER ENDS ARE GAS-SPECIFIC UNDER IS 3224 (O₂ G5/8 BULLNOSE · He G3/4 · AIR G7/8) — THE ONLY MECHANICAL GUARD: PLUGS ARE NOT KEYED. LABEL AND COLOUR-BAND EVERY SET.',
+  '7. OPTION (NOT FITTED): A NEEDLE VALVE IN EACH CYLINDER LEG FOR SELECTION WITHOUT REACHING THE CYLINDER VALVE.',
+  '8. [CONFIRM] OUTLETS ON THE SUPPLIER’S ACTUAL CYLINDERS — LEGACY AND IMPORTED VALVES EXIST. 9. REV A FOR FABRICATION REVIEW.',
+].forEach((s, i) => label(52, 839 + i * 13.6, s, { size:8, anchor:'start', weight:500 }));
+
+/* ---------- ratings (bottom-centre) ---------- */
+el('rect', { x:760, y:800, width:440, height:170, fill:'#fff', stroke:INK, 'stroke-width':1.2 });
+label(772, 820, 'RATINGS', { size:9.5, anchor:'start', mono:true });
+[
+  ['CYLINDERS', 'O₂ 150 (147) · He 150–200 · AIR 232 (300) bar'],
+  ['PIGTAILS / WHIPS', '400 bar WP · 4:1 BURST · O₂-CLEAN'],
+  ['CHECK VALVES', '6000 psi (413 bar) · 316 SS · ⅓ psi CRACK'],
+  ['TEES & LINK HOSES', '6000 psi · ¼" 316 SS TEES · 400 bar HOSE'],
+  ['BLEED VALVE', '6000 psi · ¼" · REGULATING STEM'],
+  ['QC PLUG', 'FAV FDQRCO2 · 6000 psi · ¼" NPT F · LABELLED'],
+  ['CYLINDER ENDS', 'IS 3224 No.3 G5/8 · No.20 G3/4 · No.19 G7/8 · RH · BRASS'],
+].forEach(([k, v], i) => { const y = 840 + i * 17; label(772, y, k, { size:8, anchor:'start', mono:true, color:MUTED }); label(900, y, v, { size:8.2, anchor:'start', weight:500 }); });
+
+/* ---------- title block ---------- */
+const TB = grp();
+el('rect', { x:1220, y:800, width:350, height:170, fill:'#fff', stroke:INK, 'stroke-width':2 }, TB);
+el('path', { d:'M1220,852 L1570,852 M1220,904 L1570,904 M1395,904 L1395,936 M1220,936 L1570,936 M1336,936 L1336,970 M1470,936 L1470,970', stroke:INK, 'stroke-width':1 }, TB);
+label(1234, 824, 'PORTABLE FILL STATION', { size:13, anchor:'start', weight:700 });
+label(1234, 842, 'CASCADE PIGTAIL MANIFOLDS PM-01 · 02 · 03', { size:9.5, anchor:'start', color:MUTED });
+label(1234, 874, 'PROCESS & INSTRUMENTATION DIAGRAM + DETAIL A', { size:10, anchor:'start' });
+label(1234, 892, 'SUPPLY SIDE OF BSD-PFS-001 · BULLNOSE (IS 3224)', { size:8, anchor:'start', color:MUTED });
+label(1234, 918, 'DWG NO', { size:7.5, anchor:'start', color:MUTED }); label(1234, 930, 'BSD-PFS-002', { size:10, anchor:'start', mono:true });
+label(1407, 918, 'REV', { size:7.5, anchor:'start', color:MUTED }); label(1407, 930, 'A', { size:10, anchor:'start', mono:true });
+label(1234, 950, 'DATE', { size:7.5, anchor:'start', color:MUTED }); label(1234, 963, '2026-09-04', { size:9.5, anchor:'start', mono:true });
+label(1350, 950, 'DRAWN BY', { size:7.5, anchor:'start', color:MUTED }); label(1350, 963, 'DONARUN DAS', { size:9.5, anchor:'start', mono:true });
+label(1484, 950, 'SCALE', { size:7.5, anchor:'start', color:MUTED }); label(1484, 963, 'NTS', { size:9.5, anchor:'start', mono:true });
+
+/* ---------- tooltips ---------- */
+const tipEl = document.createElement('div'); tipEl.className = 'pid-tip'; document.body.appendChild(tipEl);
+function renderTip(txt) {
+  tipEl.textContent = ''; const sep = txt.indexOf(' — ');
+  if (sep > 0 && sep < 44) { const tag = document.createElement('span'); tag.className = 'tip-tag'; tag.textContent = txt.slice(0, sep); tipEl.appendChild(tag); tipEl.appendChild(document.createTextNode(txt.slice(sep + 3))); }
+  else tipEl.appendChild(document.createTextNode(txt));
+}
+function placeTip(x, y) { const r = tipEl.getBoundingClientRect(); let left = x + 14, top = y + 16; if (left + r.width > innerWidth - 8) left = x - r.width - 14; if (top + r.height > innerHeight - 8) top = y - r.height - 12; tipEl.style.left = left + 'px'; tipEl.style.top = top + 'px'; }
+let current = null;
+svg.addEventListener('pointermove', (e) => { const g = e.target.closest('[data-tip]'); if (!g) { tipEl.style.opacity = 0; current = null; return; } if (g !== current) { current = g; renderTip(g.getAttribute('data-tip')); } tipEl.style.opacity = 1; placeTip(e.clientX, e.clientY); });
+svg.addEventListener('pointerleave', () => { tipEl.style.opacity = 0; current = null; });
+})();
+</script>
+</body>
+</html>
