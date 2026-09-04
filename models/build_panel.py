@@ -334,7 +334,7 @@ def lights_cameras():
         o = bpy.data.objects.new(name, cd); bpy.context.collection.objects.link(o); o.location = loc
         c = o.constraints.new('TRACK_TO'); c.target = focus; c.track_axis = 'TRACK_NEGATIVE_Z'; c.up_axis = 'UP_Y'
         return o
-    cam('Cam_iso', (-0.78, -0.82, 0.66), 42); cam('Cam_top', (0.0, -0.001, 1.25), 50); cam('Cam_front', (0.0, -1.25, 0.42), 45); cam('Cam_operator', (0.16, -0.72, 0.62), 40)
+    cam('Cam_iso', (-0.78, -0.82, 0.66), 42); cam('Cam_top', (0.0, -0.12, 1.25), 50)   # slight front offset: a dead-vertical TRACK_TO camera has an undefined roll; cam('Cam_front', (0.0, -1.25, 0.42), 45); cam('Cam_operator', (0.16, -0.72, 0.62), 40)
     sc = bpy.context.scene
     for eng in ('BLENDER_EEVEE_NEXT', 'BLENDER_EEVEE'):
         try: sc.render.engine = eng; break
@@ -380,3 +380,257 @@ def save_blend():
 def run(phase):
     return {'clear': clear_scene, 'case': build_case, 'plate': build_plate, 'components': build_components, 'labels': build_labels,
             'whips': build_whips, 'lights': lights_cameras, 'convert': convert_text_and_curves, 'export': export_glb, 'save': save_blend}[phase]()
+
+
+# =====================================================================================
+# PASS 4 — under-plate piping, flow mimic, cascade sets, realism
+# =====================================================================================
+def D(depth_mm):
+    """z (mm, absolute) at a depth below the plate top."""
+    return PLATE_TOP - depth_mm
+
+def tube(name, pts, parent, r=3.2, m=None):
+    """Polyline tube through GA points (x_ga, y_ga, z_abs_mm)."""
+    cu = bpy.data.curves.new(name, 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = r * MM; cu.bevel_resolution = 4; cu.use_fill_caps = True
+    sp = cu.splines.new('POLY'); sp.points.add(len(pts) - 1)
+    for p, (x, y, z) in zip(sp.points, pts):
+        wx, wy, wz = P(x, y, z); p.co = (wx, wy, wz, 1.0)
+    o = bpy.data.objects.new(name, cu); bpy.context.collection.objects.link(o); o.parent = parent
+    o.data.materials.append(m or M['steel']); return o
+
+def fitting(name, x, y, z, parent, size=15):
+    return box(name, size, size, size, P(x, y, z), M['steel'], parent, bevel=1.5)
+
+def cv_body(name, x, y, z, parent, axis='Y'):
+    b = cyl(name, 7.5, 40, P(x, y, z), M['steel'], parent, axis=axis, verts=24, bevel=1)
+    hexnut(name + '_h1', 8.5, 8, P(x, y, z), M['steel'], parent)  # visual hex at the mid — cheap detail
+    return b
+
+def build_piping():
+    """Tube runs under the plate, per BSD-PFS-001: QC → tee(PI) → NV → CV → header → NV-04/NV-05; fill line with PSV-01, V-01, PI-04, CV-04; vents to VB-01."""
+    # re-orient the needle valve ports along Y (flow runs front→back in the columns)
+    for o in list(bpy.data.objects):
+        if o.name.endswith('_portL') or o.name.endswith('_portR'): bpy.data.objects.remove(o, do_unlink=True)
+    for tag, x, y in (('NV-01', 60, 185), ('NV-02', 135, 185), ('NV-03', 210, 185), ('NV-04', 320, 185), ('NV-05', 400, 185), ('V-01', 425, 235)):
+        g = bpy.data.objects[f'{tag}_grp']
+        cyl(f'{tag}_portF', 6.5, 30, (0, -17 * MM, (-PLATE_T - 45) * MM), M['steel_dull'], g, axis='Y', verts=24)
+        cyl(f'{tag}_portB', 6.5, 30, (0,  17 * MM, (-PLATE_T - 45) * MM), M['steel_dull'], g, axis='Y', verts=24)
+    pip = empty('Piping')
+    z49, z40, z68, z95 = D(49), D(40), D(68), D(95)
+    for i, (x, m) in enumerate(((60, 'o2'), (135, 'he'), (210, 'air'))):
+        n = f'L{i+1}'
+        tube(f'{n}_qc_run', [(x, 290, D(30)), (x, 290, z49), (x, 265, z49)], pip)
+        fitting(f'{n}_tee_pi', x, 265, z49, pip)
+        tube(f'{n}_pi_branch', [(x, 265, z49), (x + 22, 265, z40), (x + 22, 90, z40), (x, 90, z40), (x, 75, z40), (x, 75, D(28))], pip)
+        tube(f'{n}_to_nv', [(x, 265, z49), (x, 202, z49)], pip)                       # into the NV front port
+        tube(f'{n}_nv_to_cv', [(x, 168, z49), (x, 150, z49)], pip)                    # out of the NV back port
+        cv_body(f'CV-0{i+1}', x, 150, z49, pip, axis='Y')
+        tube(f'{n}_cv_to_hdr', [(x, 150, z49), (x, 120, z49)], pip)
+    # common header along y = 120 to the selector valves
+    tube('HDR_manifold', [(60, 120, z49), (400, 120, z49)], pip, r=3.6)
+    for x in (135, 210, 320): fitting(f'HDR_tee_{x}', x, 120, z49, pip)
+    tube('HDR_to_NV04', [(320, 120, z49), (320, 168, z49)], pip)
+    tube('HDR_to_NV05', [(400, 120, z49), (400, 168, z49)], pip)
+    # fill line: NV-04 front port → y 250 → east to QC-06; PSV-01, CV-04 join, PI-04 branch, V-01 on it
+    tube('FILL_from_NV04', [(320, 202, z49), (320, 250, z49), (435, 250, z49), (435, 290, z49), (435, 290, D(30))], pip, r=3.6)
+    for x in (340, 360, 372): fitting(f'FILL_tee_{x}', x, 250, z49, pip)
+    tube('PI04_branch', [(372, 250, z49), (372, 235, z40), (372, 90, z40), (380, 90, z40), (380, 75, z40), (380, 75, D(30))], pip)
+    tube('QC05_to_CV04', [(360, 290, D(30)), (360, 290, z49), (360, 250, z49)], pip)
+    cv_body('CV-04', 360, 270, z49, pip, axis='Y')
+    # PSV-01 hanging below the fill line
+    psv = empty('PSV-01_grp', P(340, 250, z49)); psv.parent = pip
+    cyl('PSV-01_body', 9, 40, (0, 0, -32 * MM), M['steel'], psv, bevel=1.2)
+    hexnut('PSV-01_cap', 10, 8, (0, 0, -55 * MM), M['steel'], psv)
+    tube('VENT_psv', [(340, 250, D(60)), (340, 250, z95), (300, 250, z95), (300, 30, z95), (20, 30, z95), (20, 5, z95), (20, 5, D(29)), (20, -12, D(29))], pip, r=3.2, m=M['steel_dull'])
+    tube('VENT_v01', [(425, 218, z49), (425, 205, z49), (425, 205, z95), (300, 205, z95)], pip, r=3.2, m=M['steel_dull'])
+    fitting('VENT_tee', 300, 205, z95, pip, size=13)
+    # booster loop: NV-05 front port → dive under the fill line → QC-04
+    tube('BST_out', [(400, 202, z49), (400, 215, z49), (400, 215, z68), (400, 268, z68), (285, 268, z68), (285, 290, z68), (285, 290, D(30))], pip)
+    # V-01 sits on the fill line: its front port is the tee
+    tube('V01_stub', [(425, 250, z49), (425, 252, z49)], pip)
+    return f'piping ok ({sum(1 for o in bpy.data.objects if o.parent is pip)} parts)'
+
+def arrow_head(name, x, y, ang_deg, m, parent, L=7, Wd=5.5, z_off=0.35):
+    bm = bmesh.new(); a = math.radians(ang_deg)
+    def rot(px, py): return (px * math.cos(a) - py * math.sin(a), px * math.sin(a) + py * math.cos(a))
+    tri = [rot(L/2, 0), rot(-L/2, Wd/2), rot(-L/2, -Wd/2)]
+    vs = [bm.verts.new((tx * MM, ty * MM, 0)) for tx, ty in tri]; bm.faces.new(vs)
+    bmesh.ops.solidify(bm, geom=bm.faces[:] + bm.edges[:] + bm.verts[:], thickness=0.4 * MM)
+    me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
+    o = bpy.data.objects.new(name, me); bpy.context.collection.objects.link(o); o.location = P(x, y, PLATE_TOP + z_off); o.parent = parent; me.materials.append(m)
+    return o
+
+def line(name, x0, y0, x1, y1, m, parent, w=2.6):
+    L = math.hypot(x1 - x0, y1 - y0); cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+    o = box(name, L, w, 0.5, P(cx, cy, PLATE_TOP + 0.25), m, parent)
+    o.rotation_euler = (0, 0, math.atan2(-(y1 - y0), (x1 - x0)))   # GA y runs opposite to Blender Y
+    return o
+
+def build_mimic():
+    """Painted flow-mimic on the plate top; replaces the wide colour bands."""
+    for o in list(bpy.data.objects):
+        if o.name.startswith('Band_') or o.name.startswith('lbl_') or o.name.startswith('mim_'): bpy.data.objects.remove(o, do_unlink=True)
+    mim = empty('Mimic'); lab = bpy.data.objects.get('Labels') or empty('Labels')
+    for i, (x, m) in enumerate(((60, 'o2'), (135, 'he'), (210, 'air'))):
+        line(f'mim_in{i}', x, 268, x, 206, M[m], mim);  arrow_head(f'mim_in{i}_a', x, 236, 90, M[m], mim)   # QC → NV (towards the back = +Blender Y)
+        line(f'mim_pi{i}', x, 165, x, 112, M[m], mim)                                                      # NV → gauge stub (pressure indication)
+        line(f'mim_hd{i}', x, 165, x, 150, M['mix'], mim)                                                   # NV → header
+    line('mim_header', 60, 150, 400, 150, M['mix'], mim, w=3.2)
+    for x in (100, 175, 260, 360): arrow_head(f'mim_header_a{x}', x, 150, 0, M['mix'], mim)
+    line('mim_to_nv04', 320, 150, 320, 166, M['mix'], mim); line('mim_to_nv05', 400, 150, 400, 166, M['mix'], mim)
+    line('mim_fill_a', 320, 204, 320, 250, M['mix'], mim, w=3.2); line('mim_fill_b', 320, 250, 435, 250, M['mix'], mim, w=3.2); line('mim_fill_c', 435, 250, 435, 272, M['mix'], mim, w=3.2)
+    for x in (350, 395): arrow_head(f'mim_fill_a{x}', x, 250, 0, M['mix'], mim)
+    arrow_head('mim_fill_qc6', 435, 264, -90, M['mix'], mim)
+    line('mim_bst_a', 400, 204, 400, 262, M['mix'], mim); line('mim_bst_b', 400, 262, 285, 262, M['mix'], mim); line('mim_bst_c', 285, 262, 285, 272, M['mix'], mim)
+    arrow_head('mim_bst_a1', 340, 262, 180, M['mix'], mim); arrow_head('mim_bst_qc4', 285, 268, -90, M['mix'], mim)
+    line('mim_qc5', 360, 272, 360, 250, M['mix'], mim); arrow_head('mim_qc5_a', 360, 258, 90, M['mix'], mim)
+    line('mim_pi4', 372, 250, 372, 112, M['mix'], mim, w=1.6)
+    line('mim_v01', 425, 250, 425, 242, M['mix'], mim)
+    # line captions
+    def C(s, x, y, size=2.8, m='ink', rot=0):
+        t = text(f'lbl_{s}', s, size, P(x, y, PLATE_TOP + 0.3), M[m], parent=lab, extrude=0.2); t.rotation_euler = (0, 0, rot)
+    C('MANIFOLD  ≤300 bar', 230, 143); C('FILL LINE  200 bar', 378, 243); C('TO BOOSTER', 342, 257); C('FROM BOOSTER', 360, 281, 2.4); C('PRODUCT', 435, 281, 2.4)
+    # equipment tags, 5 mm, offset from the mimic lines
+    def L(s, x, y, size=5.0, align='CENTER'): text(f'lbl_{s}', s, size, P(x, y, PLATE_TOP + 0.3), M['ink'], parent=lab, extrude=0.25, align=align)
+    L('PORTABLE FILL STATION · MODULE A · O2 SERVICE — NO OIL · 200 bar FILL · PSV 220 bar', 230, 12, 4.6)
+    for tag, gas, x in (('PI-01', 'O2', 60), ('PI-02', 'He', 135), ('PI-03', 'AIR', 210)): L(f'{tag} {gas}', x + 40, 75, 4.2, 'LEFT')
+    L('PI-04 MASTER', 380, 122, 4.2)
+    for tag, gas, x in (('NV-01', 'O2', 60), ('NV-02', 'He', 135), ('NV-03', 'AIR', 210), ('NV-04', 'DIRECT', 320), ('NV-05', 'BOOST', 400)): L(f'{tag} {gas}', x + 22, 185, 4.2, 'LEFT')
+    L('V-01 BLEED', 425, 218, 3.6)
+    for tag, gas, x in (('QC-01', 'O2 IN', 60), ('QC-02', 'He IN', 135), ('QC-03', 'AIR IN', 210), ('QC-04', 'BST OUT', 285), ('QC-05', 'BST IN', 360), ('QC-06', 'PRODUCT', 435)): L(f'{tag} {gas}', x, 322 if x < 250 else 336, 3.8)
+    return 'mimic + labels ok'
+
+def industrial_cylinder(name, wx, wy, body_mat, shoulder_mat, parent, label=None):
+    """47 L industrial cylinder: Ø229 × ~1.37 m body, shoulder, neck, valve with handwheel and side outlet. Returns the outlet world point (m)."""
+    g = empty(f'{name}_grp', (wx, wy, 0)); g.parent = parent
+    cyl(f'{name}_body', 114.5, 1300, (0, 0, 0.66), body_mat, g, verts=64)
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=114.5 * MM, location=(0, 0, 1.31)); s = bpy.context.active_object; s.name = f'{name}_shoulder'; s.data.materials.append(shoulder_mat); s.parent = g; s.scale.z = 0.55
+    cyl(f'{name}_neck', 24, 40, (0, 0, 1.38), M['steel_dull'], g, verts=32)
+    box(f'{name}_valve', 34, 30, 60, (0, 0, 1.43), M['brass'], g, bevel=3)
+    cyl(f'{name}_wheel', 34, 12, (0, 0, 1.475), M['black'], g, verts=32, bevel=2)
+    cyl(f'{name}_outlet', 9, 40, (0.03, 0, 1.42), M['brass'], g, axis='X', verts=24)     # outlet points +X (towards the case)
+    hexnut(f'{name}_nut', 12, 14, (0.055, 0, 1.42), M['brass'], g)
+    cyl(f'{name}_footring', 118, 18, (0, 0, 0.009), M['rubber'], g, verts=48)
+    if label: text(f'{name}_lbl', label, 40, (0.116, 0, 0.95), M['plate'], rot=(math.pi/2, 0, math.pi/2), parent=g, extrude=0.3)
+    return (wx + 0.075, wy, 1.42)
+
+def hose_curve(name, pts, parent, r=5.0, m=None):
+    cu = bpy.data.curves.new(name, 'CURVE'); cu.dimensions = '3D'; cu.bevel_depth = r * MM; cu.bevel_resolution = 6; cu.use_fill_caps = True
+    sp = cu.splines.new('BEZIER'); sp.bezier_points.add(len(pts) - 1)
+    for bp, p in zip(sp.bezier_points, pts): bp.co = Vector(p); bp.handle_left_type = bp.handle_right_type = 'AUTO'
+    o = bpy.data.objects.new(name, cu); bpy.context.collection.objects.link(o); o.parent = parent; o.data.materials.append(m or M['hose']); return o
+
+def whip_path(chain_x, last_y, chain_z, qx, qy, qz):
+    """Supply whip: off the bleed tee, down to the floor beside the case, along the front, over the front rim into the socket."""
+    front = -(CASE_EX_Y / 2) * MM                                     # case front outer wall (y, m)
+    return [(chain_x, last_y - 0.067, chain_z), (chain_x + 0.05, last_y - 0.20, 1.20), (-0.36, front - 0.10, 0.10),
+            (qx - 0.05, front - 0.10, 0.06), (qx, front - 0.03, 0.20), (qx, qy - 0.045, qz + 0.03), (qx, qy, qz)]
+
+def build_cascade():
+    """PM-01 (O2 ×3), PM-02 (He ×2), PM-03 (air) beside the case: bullnose pigtails → check valves → tee chain → bleed → whip to the panel."""
+    casc = empty('Cascade')
+    o2body = mat('CylO2Black', (0.03, 0.03, 0.032), 0.05, 0.5); white = mat('CylWhite', (0.9, 0.9, 0.88), 0.0, 0.5)
+    hebody = mat('CylHeBrown', (0.30, 0.16, 0.07), 0.05, 0.5); airbody = mat('CylAirGrey', (0.20, 0.21, 0.23), 0.05, 0.5)
+    sets = (
+        ('PM-01', 'o2', -0.78, (0.55, 0.25, -0.05), o2body, white, 'O2', 60),
+        ('PM-02', 'he', -1.14, (0.55, 0.25), hebody, hebody, 'He', 135),
+        ('PM-03', 'air', -1.14, (-0.20,), airbody, M['black'], 'AIR', 210),
+    )
+    for tag, key, wx, ys, body, shoulder, gas, qc_x in sets:
+        grp = empty(f'{tag}_grp'); grp.parent = casc
+        outlets = [industrial_cylinder(f'{tag}_C{i+1}', wx, wy, body, shoulder, grp, gas) for i, wy in enumerate(ys)]
+        chain_z = 1.56; chain_x = wx + 0.16
+        tees = []
+        for i, (ox, oy, oz) in enumerate(outlets):
+            tx, ty = chain_x, oy
+            hose_curve(f'{tag}_pigtail{i+1}', [(ox, oy, oz), (ox + 0.06, oy, oz + 0.02), (tx, ty - 0.02, chain_z - 0.05), (tx, ty, chain_z - 0.03)], grp, r=4.5)
+            cv = cyl(f'{tag}_CV{i+1}', 7.5, 40, (tx, ty, chain_z - 0.04), M['steel'], grp, verts=24, bevel=1)
+            t = box(f'{tag}_tee{i+1}', 16, 16, 16, (tx, ty, chain_z), M['steel'], grp, bevel=1.5); tees.append(t)
+        for i in range(len(outlets) - 1):
+            (ax, ay, _), (bx, by, _) = outlets[i], outlets[i + 1]
+            hose_curve(f'{tag}_link{i+1}', [(chain_x, ay, chain_z), (chain_x + 0.04, (ay + by) / 2, chain_z + 0.06), (chain_x, by, chain_z)], grp, r=4.5)
+        # cap on the first tee, bleed valve after the last, whip to the panel
+        last_y = outlets[-1][1]; first_y = outlets[0][1]
+        cyl(f'{tag}_cap', 8, 12, (chain_x, first_y + 0.014, chain_z), M['steel'], grp, axis='Y', verts=16)
+        bl = empty(f'{tag}_bleed_grp', (chain_x, last_y - 0.05, chain_z)); bl.parent = grp
+        cyl(f'{tag}_bleed_body', 8, 34, (0, 0, 0), M['steel'], bl, axis='Y', verts=24); cyl(f'{tag}_bleed_stem', 3, 18, (0, 0, 0.014), M['steel_dull'], bl, verts=16)
+        knurled_knob(f'{tag}_bleed_knob', 11, 9, (0, 0, 0.028), M['black'], bl)
+        hose_curve(f'{tag}_chain_to_bleed', [(chain_x, last_y, chain_z), (chain_x, last_y - 0.033, chain_z)], grp, r=4.5)
+        qx, qy, qz = P(qc_x, 290, PLATE_TOP + 56)
+        hose_curve(f'{tag}_whip', whip_path(chain_x, last_y, chain_z, qx, qy, qz), grp, r=5.0)
+    return 'cascade ok'
+
+def realism():
+    """Brushed anodised plate, textured case plastic, softer key light; HDRI is set separately if Poly Haven is available."""
+    def bump(m, scale, strength, stretch=None):
+        nt = m.node_tree; b = nt.nodes.get('Principled BSDF')
+        tex = nt.nodes.new('ShaderNodeTexNoise'); tex.inputs['Scale'].default_value = scale; tex.inputs['Detail'].default_value = 6
+        bm = nt.nodes.new('ShaderNodeBump'); bm.inputs['Strength'].default_value = strength; bm.inputs['Distance'].default_value = 0.0004
+        if stretch:
+            mp = nt.nodes.new('ShaderNodeMapping'); mp.inputs['Scale'].default_value = stretch
+            tc = nt.nodes.new('ShaderNodeTexCoord'); nt.links.new(tc.outputs['Object'], mp.inputs['Vector']); nt.links.new(mp.outputs['Vector'], tex.inputs['Vector'])
+        nt.links.new(tex.outputs['Fac'], bm.inputs['Height']); nt.links.new(bm.outputs['Normal'], b.inputs['Normal'])
+    plate = bpy.data.materials['AnodisedAl']; b = plate.node_tree.nodes['Principled BSDF']
+    b.inputs['Roughness'].default_value = 0.32; b.inputs['Metallic'].default_value = 0.9
+    try: b.inputs['Anisotropic'].default_value = 0.6
+    except Exception: pass
+    bump(plate, 40.0, 0.12, (1.0, 60.0, 60.0))
+    bump(bpy.data.materials['CasePlastic'], 250.0, 0.35)
+    bump(bpy.data.materials['Rubber'], 120.0, 0.2)
+    for n, e in (('Key', 180), ('Fill', 70), ('Rim', 90)):
+        if n in bpy.data.lights: bpy.data.lights[n].energy = e
+    # cameras for the new views
+    focus = bpy.data.objects['Focus']
+    def cam(name, loc, lens):
+        if name in bpy.data.objects: return bpy.data.objects[name]
+        cd = bpy.data.cameras.new(name); cd.lens = lens; o = bpy.data.objects.new(name, cd); bpy.context.collection.objects.link(o); o.location = loc
+        c = o.constraints.new('TRACK_TO'); c.target = focus; c.track_axis = 'TRACK_NEGATIVE_Z'; c.up_axis = 'UP_Y'; return o
+    cf = bpy.data.objects.get('CascadeFocus') or empty('CascadeFocus', (-0.55, 0.05, 0.62))
+    cc = cam('Cam_cascade', (-1.4, -2.9, 1.5), 32); cc.constraints[0].target = cf
+    cam('Cam_under', (0.2, -0.95, 0.75), 40)
+    return 'realism ok'
+
+def render_under():
+    """Plate, mimic and labels hidden → the piping shows."""
+    hide = [bpy.data.objects[n] for n in ('Plate',) if n in bpy.data.objects] + [o for o in bpy.data.objects if o.parent and o.parent.name in ('Labels', 'Mimic')]
+    for o in hide: o.hide_render = True
+    try: return render('under')
+    finally:
+        for o in hide: o.hide_render = False
+
+_RUN = dict(piping=build_piping, mimic=build_mimic, cascade=build_cascade, realism=realism, under=render_under)
+def run(phase):  # noqa: F811 — extends the pass-1 map
+    if phase in _RUN: return _RUN[phase]()
+    return {'clear': clear_scene, 'case': build_case, 'plate': build_plate, 'components': build_components, 'labels': build_labels,
+            'whips': build_whips, 'lights': lights_cameras, 'convert': convert_text_and_curves, 'export': export_glb, 'save': save_blend}[phase]()
+
+# ---------------------------------------------------------------- pass 5: cylinder paint + whip drape (edits an existing scene)
+def repaint_cylinders():
+    """Cylinder bodies are enamel, not chrome: metallic ≈0 so black/brown/grey read under the HDRI."""
+    for n, met in (('CylO2Black', 0.05), ('CylHeBrown', 0.05), ('CylAirGrey', 0.05), ('CylWhite', 0.0)):
+        m = bpy.data.materials.get(n)
+        if not m: continue
+        b = m.node_tree.nodes.get('Principled BSDF'); b.inputs['Metallic'].default_value = met; b.inputs['Roughness'].default_value = 0.5
+    bpy.data.materials['CylAirGrey'].node_tree.nodes['Principled BSDF'].inputs['Base Color'].default_value = (0.20, 0.21, 0.23, 1.0)
+    return 'repaint ok'
+
+def reroute_whips():
+    """Rebuild the three supply whips on the draped path (see whip_path)."""
+    casc = bpy.data.objects['Cascade']; n = 0
+    for tag, wx, ys, qc_x in (('PM-01', -0.78, (0.55, 0.25, -0.05), 60), ('PM-02', -1.14, (0.55, 0.25), 135), ('PM-03', -1.14, (-0.20,), 210)):
+        old = bpy.data.objects.get(f'{tag}_whip')
+        if old: cu = old.data; bpy.data.objects.remove(old, do_unlink=True); bpy.data.curves.remove(cu)
+        grp = bpy.data.objects[f'{tag}_grp']
+        qx, qy, qz = P(qc_x, 290, PLATE_TOP + 56)
+        hose_curve(f'{tag}_whip', whip_path(wx + 0.16, ys[-1], 1.56, qx, qy, qz), grp, r=5.0); n += 1
+    return f'rerouted {n} whips'
+
+def render_cascade():
+    """The wide cascade view is floor-dominated and reads washed out at the panel exposure; render it 0.5 stop darker."""
+    sc = bpy.context.scene; e0 = sc.view_settings.exposure
+    try:
+        sc.view_settings.exposure = -0.7; return render('cascade')
+    finally:
+        sc.view_settings.exposure = e0
+
+_RUN.update(repaint=repaint_cylinders, whips5=reroute_whips, cascade_render=render_cascade)

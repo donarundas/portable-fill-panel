@@ -35,6 +35,11 @@
   #stage { position: relative; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: #e9edf1; box-shadow: 0 1px 3px rgba(10,20,35,.08); }
   #stage canvas { display: block; width: 100%; height: auto; }
   #stage .fallback { padding: 40px; text-align: center; color: var(--page-muted); font-size: 14px; }
+  .tag { pointer-events: auto; font: 600 11px/1 ui-monospace, Menlo, monospace; color: #eef2f6; background: rgba(28,37,48,.92); padding: 3px 7px; border-radius: 999px; white-space: nowrap; cursor: help; letter-spacing: .02em; transform: translate(-50%, -140%); }
+  .tag:hover { background: #1d4ed8; }
+  .tag .tip { display: none; position: absolute; left: 50%; top: 120%; transform: translateX(-50%); width: 240px; white-space: normal; font: 12px/1.45 "Helvetica Neue", Arial, sans-serif; font-weight: 400; background: #1c2530; color: #eef2f6; padding: 8px 10px; border-radius: 8px; box-shadow: 0 6px 18px rgba(10,20,35,.35); }
+  .tag:hover .tip { display: block; }
+  #stage { position: relative; }
   .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
   .gallery figure { margin: 0; } .gallery img { width: 100%; border: 1px solid var(--rule); border-radius: 6px; display: block; }
   .gallery figcaption { font-size: 12.5px; color: var(--page-muted); margin-top: 6px; }
@@ -57,9 +62,9 @@
 <body>
 <header class="page">
   <div class="head-text">
-  <div class="eyebrow">BSD-PFS-001 · 3D PASS 3 · 2026-09-04 · Built in Blender from the BSD-PFS-003 arrangement</div>
+  <div class="eyebrow">BSD-PFS-001 · 3D PASS 4 · 2026-09-04 · Blender build: piping, flow mimic, cascade sets</div>
   <h1>Portable Fill Station — 3D arrangement</h1>
-  <p>The REV A panel modelled in Blender to the BSD-PFS-003 dimensions: a Pelican 1550 with the 460 × 350 × 4 mm plate 30 mm below the rim, three 63 mm gauges with dials at the back, needle valves with gas-coloured knurled knobs, six couplings on bulkhead adaptors along the front, the fill-line bleed, engraved tags and colour bands, the fill whip over the rim to a 3 L cylinder, and three supply whips coiled in the lid. Drag to orbit, scroll to zoom. Booster and analyser travel in their own cases and are not shown.</p>
+  <p>The REV A panel modelled in Blender to the BSD-PFS-003 dimensions, now with everything the P&amp;ID calls for: the ¼ in tube runs under the plate (inlet legs with gauge tees, common header, selector, fill line with relief and bleed, vent to the back wall, booster loop), a painted flow mimic with arrows on the plate, 5 mm engraved tags, and the three cascade sets beside the case: 47 L oxygen, helium and air cylinders with pigtails, check valves, tee chains, bleeds and whips to the panel. Hide the plate to see the piping; hover a part for its tag and duty.</p>
   </div>
   <div class="nav-row">
     <a href="portable-pid.html">← P&amp;ID REV A</a>
@@ -72,11 +77,17 @@
   <div class="toolbar" role="group" aria-label="Views">
     <button type="button" data-view="iso" aria-pressed="true">Isometric</button>
     <button type="button" data-view="top">Plate from above</button>
-    <button type="button" data-view="front">Front</button>
     <button type="button" data-view="oper">Operator's view</button>
+    <button type="button" data-view="under">Piping (plate off)</button>
+    <button type="button" data-view="cascade">Cascade sets</button>
+    <label><input type="checkbox" id="plate" checked> Plate</label>
+    <label><input type="checkbox" id="piping" checked> Piping</label>
+    <label><input type="checkbox" id="mimic" checked> Flow lines</label>
+    <label><input type="checkbox" id="labels" checked> Engraving</label>
+    <label><input type="checkbox" id="tags" checked> Tags</label>
     <label><input type="checkbox" id="lid" checked> Lid open</label>
-    <label><input type="checkbox" id="labels" checked> Engraved labels</label>
-    <label><input type="checkbox" id="whip" checked> Fill whip &amp; cylinder</label>
+    <label><input type="checkbox" id="cascade" checked> Cascades</label>
+    <label><input type="checkbox" id="whip" checked> Fill whip</label>
     <span class="hint">Loading the Blender model…</span>
   </div>
   <div id="stage"><div class="fallback">Loading the 3D viewer…</div></div>
@@ -111,10 +122,12 @@
     <figure><img src="renders/top.png" alt="Plate seen from above" loading="lazy"><figcaption>Plate from above</figcaption></figure>
     <figure><img src="renders/operator.png" alt="Operator's view over the front rim" loading="lazy"><figcaption>Operator's view</figcaption></figure>
     <figure><img src="renders/front.png" alt="Front elevation" loading="lazy"><figcaption>Front</figcaption></figure>
+    <figure><img src="renders/under.png" alt="Plate hidden, showing the tube runs" loading="lazy"><figcaption>Plate hidden — piping per the P&amp;ID</figcaption></figure>
+    <figure><img src="renders/cascade.png" alt="Cascade cylinder sets beside the case" loading="lazy"><figcaption>Cascade sets PM-01, PM-02, PM-03</figcaption></figure>
   </div>
 
   <h2>How the model is made</h2>
-  <p>A parametric Blender script (<span class="mono">models/build_panel.py</span>) builds every part from the BSD-PFS-003 numbers: the case as a bevelled tub with a hinged, recessed lid; the plate with its Ø67, Ø14.5 and Ø6.5 holes cut; gauges with bezel, dial, ticks, numerals and a needle; needle valves with knurled knobs in gas colours; couplings on bulkhead adaptors with colour rings; the digital gauge; engraved tags and paint-filled bands; the fill whip as a bevelled curve to a 3 L cylinder. The source file is <span class="mono">models/portable-fill-panel.blend</span>; the web viewer loads the exported <span class="mono">models/panel.glb</span>. Changing a position on the GA and re-running the script regenerates everything.</p>
+  <p>A parametric Blender script (<span class="mono">models/build_panel.py</span>) builds every part from the BSD-PFS-003 numbers: the case as a bevelled tub with a hinged, recessed lid; the plate with its Ø67, Ø14.5 and Ø6.5 holes cut; gauges with bezel, dial, ticks, numerals and a needle; needle valves with knurled knobs in gas colours; couplings on bulkhead adaptors with colour rings; the digital gauge; engraved tags and paint-filled bands; the fill whip as a bevelled curve to a 3 L cylinder; the under-plate ¼ in tube runs laid out to the P&amp;ID with tees, check valves, the relief valve and the vent run to VB-01; the painted flow mimic; and the three cascade sets with 47 L cylinders, pigtails, check valves, tee chains and bleeds. The source file is <span class="mono">models/portable-fill-panel.blend</span>; the web viewer loads the exported <span class="mono">models/panel.glb</span>. Changing a position on the GA and re-running the script regenerates everything.</p>
 
   <h2>What this pass does not decide</h2>
   <ul class="list">
@@ -123,7 +136,7 @@
     <li>Case colour and lid organiser. Shown black; a yellow or orange case is the usual choice for a boat deck.</li>
   </ul>
 
-  <footer class="page-foot">Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026 · BSD-PFS-001 3D pass 1 — arrangement for review</footer>
+  <footer class="page-foot">Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026 · BSD-PFS-001 3D pass 5 — arrangement for review</footer>
 </main>
 
 <script type="module">
@@ -131,55 +144,83 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-const stage = document.getElementById('stage');
-stage.textContent = '';
+const stage = document.getElementById('stage'); stage.textContent = '';
 const W = () => stage.clientWidth || 1200, H = () => Math.round(W() * 0.58);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(W(), H());
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
-renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
+const labelRenderer = new CSS2DRenderer(); labelRenderer.setSize(W(), H());
+Object.assign(labelRenderer.domElement.style, { position: 'absolute', top: '0', left: '0', pointerEvents: 'none' });
+stage.appendChild(labelRenderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0xe9edf1);
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-const camera = new THREE.PerspectiveCamera(36, W() / H(), 1, 1500);
+scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
+const camera = new THREE.PerspectiveCamera(36, W() / H(), 1, 3000);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = !matchMedia('(prefers-reduced-motion: reduce)').matches;
-controls.maxPolarAngle = Math.PI / 2 - 0.03; controls.minDistance = 20; controls.maxDistance = 260;
-scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa1a8, 0.6));
-const sun = new THREE.DirectionalLight(0xffffff, 2.0); sun.position.set(-60, 110, 60); sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -90, right: 90, top: 90, bottom: -90, near: 20, far: 300 }); sun.shadow.bias = -0.0005; scene.add(sun);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0xdfe4e9, roughness: 1 }));
+controls.maxPolarAngle = Math.PI / 2 + 0.35; controls.minDistance = 15; controls.maxDistance = 600;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa1a8, 0.55));
+const sun = new THREE.DirectionalLight(0xffffff, 1.9); sun.position.set(-90, 160, 90); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -180, right: 180, top: 180, bottom: -180, near: 20, far: 500 }); sun.shadow.bias = -0.0005; scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.MeshStandardMaterial({ color: 0xdfe4e9, roughness: 1 }));
 ground.rotation.x = -Math.PI / 2; ground.position.y = -0.85; ground.receiveShadow = true; scene.add(ground);
-const grid = new THREE.GridHelper(300, 30, 0xc6ccd3, 0xd6dbe0); grid.position.y = -0.84; scene.add(grid);
+const grid = new THREE.GridHelper(600, 60, 0xc6ccd3, 0xd6dbe0); grid.position.y = -0.84; scene.add(grid);
 
-const PT = 12.9; // plate top, cm
-const VIEWS = { iso: { pos: [-80, 78, 122], tgt: [4, 8, 0] }, top: { pos: [0, 110, 0.5], tgt: [0, PT, 0] }, front: { pos: [0, 36, 120], tgt: [0, 12, 0] }, oper: { pos: [8, 66, 82], tgt: [0, PT, 0] } };
-function setView(name) { const v = VIEWS[name]; camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update(); document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name))); }
+const PT = 12.9;
+const VIEWS = { iso: { pos: [-80, 78, 122], tgt: [4, 8, 0] }, top: { pos: [0, 110, 0.5], tgt: [0, PT, 0] }, oper: { pos: [8, 66, 82], tgt: [0, PT, 0] }, under: { pos: [12, 72, 78], tgt: [0, 4, 0] }, cascade: { pos: [-150, 150, 290], tgt: [-50, 45, 0] } };
+function setView(name) {
+  const v = VIEWS[name]; camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update();
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
+  if (name === 'under') { document.getElementById('plate').checked = false; document.getElementById('mimic').checked = false; document.getElementById('labels').checked = false; applyToggles(); }
+}
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
 setView('iso');
 
-let lidHinge = null, labels = null, whip = null;
+const nodes = {}; const tagObjs = [];
+const TAGS = {
+  'PI-01_grp': ['PI-01', 'O₂ supply gauge, 63 mm, 0–400 bar, dry, oxygen version'], 'PI-02_grp': ['PI-02', 'He supply gauge'], 'PI-03_grp': ['PI-03', 'Air supply gauge'], 'PI-04_grp': ['PI-04', 'Master blending gauge, digital 0–400 bar — reads the cylinder being filled'],
+  'NV-01_grp': ['NV-01', 'O₂ needle valve: isolates and meters oxygen into the manifold'], 'NV-02_grp': ['NV-02', 'He needle valve'], 'NV-03_grp': ['NV-03', 'Air needle valve for the top-up'],
+  'NV-04_grp': ['NV-04', 'DIRECT — manifold straight to the fill line'], 'NV-05_grp': ['NV-05', 'TO BOOSTER — manifold to the booster suction coupling'], 'V-01_grp': ['V-01', 'Fill-line bleed: with NV-04 open it empties the whole panel through VB-01'],
+  'QC-01_grp': ['QC-01', 'O₂ inlet coupling, FAV FDQRCO2 on a ¼ in bulkhead adaptor'], 'QC-02_grp': ['QC-02', 'He inlet coupling'], 'QC-03_grp': ['QC-03', 'Air inlet coupling'], 'QC-04_grp': ['QC-04', 'Booster suction out'], 'QC-05_grp': ['QC-05', 'Booster return, through CV-04'], 'QC-06_grp': ['QC-06', 'Product coupling to the fill whip'],
+  'PSV-01_grp': ['PSV-01', 'Relief valve, set 220 bar, discharges through VB-01 outside the case'], 'CV-01': ['CV-01', 'Check valve: stops He or air backing into the O₂ cascade'], 'CV-02': ['CV-02', 'Check valve on the He leg'], 'CV-03': ['CV-03', 'Check valve on the air leg'], 'CV-04': ['CV-04', 'Check valve: stops the fill line backing into the booster'],
+  'VB01': ['VB-01', 'Vent bulkhead through the back wall — PSV-01 and V-01 discharge here'], 'HDR_manifold_m': ['MANIFOLD', 'Common header, supply pressure ≤300 bar, no PSV'],
+  'PM-01_bleed_grp': ['PM-01 · V-11', 'O₂ cascade: 3 × 47 L, tee chain, bleed after the last tee, whip to QC-01'], 'PM-02_bleed_grp': ['PM-02 · V-21', 'He cascade: 2 × 47 L'], 'PM-03_bleed_grp': ['PM-03 · V-31', 'Air pigtail: 1 × 47 L bank or a scuba cylinder'],
+};
 const hint = document.querySelector('.toolbar .hint');
 new GLTFLoader().load('models/panel.glb', (g) => {
-  const model = g.scene; model.scale.setScalar(100); // metres → centimetres
-  model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material && o.material.transmission > 0) { o.castShadow = false; } } });
-  lidHinge = model.getObjectByName('LidHinge'); labels = model.getObjectByName('Labels'); whip = model.getObjectByName('FillWhip');
-  scene.add(model);
-  applyToggles();
-  if (hint) hint.textContent = 'Blender model · centimetres · Pelican 1550 · plate 460 × 350 mm';
+  const model = g.scene; model.scale.setScalar(100);
+  model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material && o.material.transmission > 0) o.castShadow = false; } });
+  ['Plate', 'Piping', 'Mimic', 'Labels', 'LidHinge', 'Cascade', 'FillWhip'].forEach(n => { nodes[n] = model.getObjectByName(n); });
+  for (const [name, [tag, tip]] of Object.entries(TAGS)) {
+    const anchor = model.getObjectByName(name) || model.getObjectByName(name + '_m'); if (!anchor) continue;
+    const el = document.createElement('div'); el.className = 'tag'; el.textContent = tag;
+    const t = document.createElement('div'); t.className = 'tip'; t.textContent = tip; el.appendChild(t);
+    const lbl = new CSS2DObject(el); const box = new THREE.Box3().setFromObject(anchor); const c = box.getCenter(new THREE.Vector3());
+    lbl.position.copy(anchor.worldToLocal(new THREE.Vector3(c.x, box.max.y, c.z))); anchor.add(lbl); tagObjs.push({ lbl, anchor, under: /^(CV|PSV|VB|HDR)/.test(name) });
+  }
+  scene.add(model); applyToggles();
+  if (hint) hint.textContent = 'Blender model · hover a tag for its duty · centimetres';
 }, undefined, () => { if (hint) hint.textContent = 'The Blender model (models/panel.glb) did not load.'; });
+const $ = id => document.getElementById(id);
 function applyToggles() {
-  if (lidHinge) lidHinge.rotation.x = document.getElementById('lid').checked ? THREE.MathUtils.degToRad(-105) : 0;
-  if (labels) labels.visible = document.getElementById('labels').checked;
-  if (whip) whip.visible = document.getElementById('whip').checked;
+  const plate = $('plate').checked;
+  if (nodes.Plate) nodes.Plate.visible = plate;
+  if (nodes.Piping) nodes.Piping.visible = $('piping').checked;
+  if (nodes.Mimic) nodes.Mimic.visible = $('mimic').checked;
+  if (nodes.Labels) nodes.Labels.visible = $('labels').checked;
+  if (nodes.LidHinge) nodes.LidHinge.rotation.x = $('lid').checked ? THREE.MathUtils.degToRad(-105) : 0;
+  if (nodes.Cascade) nodes.Cascade.visible = $('cascade').checked;
+  if (nodes.FillWhip) nodes.FillWhip.visible = $('whip').checked;
+  const showTags = $('tags').checked;
+  tagObjs.forEach(t => { t.lbl.visible = showTags && (t.under ? !plate && $('piping').checked : true) && (t.anchor.name.startsWith('PM-') ? $('cascade').checked : true); });
 }
-['lid', 'labels', 'whip'].forEach(id => document.getElementById(id).addEventListener('change', applyToggles));
-function resize() { renderer.setSize(W(), H()); camera.aspect = W() / H(); camera.updateProjectionMatrix(); }
+['plate', 'piping', 'mimic', 'labels', 'tags', 'lid', 'cascade', 'whip'].forEach(id => $(id).addEventListener('change', applyToggles));
+function resize() { renderer.setSize(W(), H()); labelRenderer.setSize(W(), H()); camera.aspect = W() / H(); camera.updateProjectionMatrix(); }
 addEventListener('resize', resize);
-renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
+renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); labelRenderer.render(scene, camera); });
 </script>
 </body>
 </html>
