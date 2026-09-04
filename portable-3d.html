@@ -74,7 +74,7 @@
     <label><input type="checkbox" id="lid" checked> Lid open</label>
     <label><input type="checkbox" id="labels" checked> Engraved labels</label>
     <label><input type="checkbox" id="whip" checked> Fill whip &amp; cylinder</label>
-    <label><input type="checkbox" id="glb" checked> Generated meshes</label>
+    <label><input type="checkbox" id="glb"> Generated meshes (rough)</label>
     <span class="hint">Units: centimetres · Pelican 1550 · plate 460 × 350 mm</span>
   </div>
   <div id="stage"><div class="fallback">Loading the 3D viewer…</div></div>
@@ -104,7 +104,7 @@
   </ul>
 
   <h2>Generated part meshes</h2>
-  <p>The gauges, needle valves, couplings and digital gauge are loaded from <span class="mono">models/&lt;slot&gt;.glb</span> when those files exist. They are produced on the home GPU box by Hunyuan3D (via Modly) from product photographs, then simplified for the web; the viewer rescales each mesh by its bounding box to the slot size, so absolute scale in the file does not matter but +Y must be up. Where a file is missing the procedural stand-in stays. The toggle switches between the two. Provenance per slot is in <span class="mono">models/MODELS.md</span>.</p>
+  <p>The gauges, needle valves, couplings and digital gauge are loaded from <span class="mono">models/&lt;slot&gt;.glb</span> when those files exist. They were produced on the home GPU box by Hunyuan3D (via Modly) and simplified for the web; the viewer rescales each mesh by its bounding box to the slot size, so absolute scale in the file does not matter but +Y must be up. The first set (2026-09-04) was generated from AI-drawn stand-in images because the vendor sites blocked photo downloads, so the shapes are generic and untextured and lose the gas colour coding. The page therefore shows the procedural parts by default; the toggle swaps the generated meshes in for comparison. Regenerating from real product photographs (WIKA 232.50, Swagelok SS-1RS4 or FAV FNV, FAV FDQRCO2, WIKA CPG1500) is the step that would make them representative. Provenance per slot is in <span class="mono">models/MODELS.md</span>.</p>
 
   <h2>What this pass does not decide</h2>
   <ul class="list">
@@ -417,7 +417,7 @@ Promise.all(Object.keys(SLOTS).map(loadSlot)).then(found => {
   const n = found.filter(Boolean).length;
   applySlots(glbToggle.checked);
   const hint = document.querySelector('.toolbar .hint');
-  if (hint) hint.textContent = (n ? `${n} of 4 part meshes generated on the GPU box · ` : 'no generated meshes yet — procedural stand-ins · ') + 'centimetres · Pelican 1550 · plate 460 × 350 mm';
+  if (hint) hint.textContent = (n ? `${n} of 4 generated meshes available (toggle) · showing procedural parts · ` : 'no generated meshes — procedural parts · ') + 'centimetres · Pelican 1550 · plate 460 × 350 mm';
 });
 setLid(true); setView('iso');
 
