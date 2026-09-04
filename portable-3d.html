@@ -62,9 +62,9 @@
 <body>
 <header class="page">
   <div class="head-text">
-  <div class="eyebrow">BSD-PFS-001 · 3D PASS 5 · 2026-09-04 · Blender build: piping, flow mimic, cascade sets</div>
+  <div class="eyebrow">BSD-PFS-001 · 3D PASS 6 · 2026-09-04 · Blender build: on the bench · piping, flow mimic, cascade sets</div>
   <h1>Portable Fill Station — 3D arrangement</h1>
-  <p>The REV A panel modelled in Blender to the BSD-PFS-003 dimensions, now with everything the P&amp;ID calls for: the ¼ in tube runs under the plate (inlet legs with gauge tees, common header, selector, fill line with relief and bleed, vent to the back wall, booster loop), a painted flow mimic with arrows on the plate, 5 mm engraved tags, and the three cascade sets beside the case: 47 L oxygen, helium and air cylinders with pigtails, check valves, tee chains, bleeds and whips to the panel. Hide the plate to see the piping; hover a part for its tag and duty.</p>
+  <p>The REV A panel modelled in Blender to the BSD-PFS-003 dimensions, now with everything the P&amp;ID calls for: the ¼ in tube runs under the plate (inlet legs with gauge tees, common header, selector, fill line with relief and bleed, vent to the back wall, booster loop), a painted flow mimic with arrows on the plate, 5 mm engraved tags, and the three cascade sets beside the case: 47 L oxygen, helium and air cylinders with pigtails, check valves, tee chains, bleeds and whips to the panel. The case sits on a 760 mm stainless work bench with the cascade cylinders and the 3 L fill cylinder on the floor, so the plate is at working height. Hide the plate to see the piping; hover a part for its tag and duty.</p>
   </div>
   <div class="nav-row">
     <a href="portable-pid.html">← P&amp;ID REV A</a>
@@ -88,6 +88,7 @@
     <label><input type="checkbox" id="lid" checked> Lid open</label>
     <label><input type="checkbox" id="cascade" checked> Cascades</label>
     <label><input type="checkbox" id="whip" checked> Fill whip</label>
+    <label><input type="checkbox" id="bench" checked> Bench</label>
     <span class="hint">Loading the Blender model…</span>
   </div>
   <div id="stage"><div class="fallback">Loading the 3D viewer…</div></div>
@@ -136,7 +137,7 @@
     <li>Case colour and lid organiser. Shown black; a yellow or orange case is the usual choice for a boat deck.</li>
   </ul>
 
-  <footer class="page-foot">Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026 · BSD-PFS-001 3D pass 5 — arrangement for review</footer>
+  <footer class="page-foot">Drawn &amp; engineered by <strong>Donarun Das</strong> · portable-fill-panel.donarundas.com · 2026 · BSD-PFS-001 3D pass 6 — arrangement for review</footer>
 </main>
 
 <script type="module">
@@ -169,8 +170,9 @@ const ground = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.Mes
 ground.rotation.x = -Math.PI / 2; ground.position.y = -0.85; ground.receiveShadow = true; scene.add(ground);
 const grid = new THREE.GridHelper(600, 60, 0xc6ccd3, 0xd6dbe0); grid.position.y = -0.84; scene.add(grid);
 
-const PT = 12.9;
-const VIEWS = { iso: { pos: [-80, 78, 122], tgt: [4, 8, 0] }, top: { pos: [0, 110, 0.5], tgt: [0, PT, 0] }, oper: { pos: [8, 66, 82], tgt: [0, PT, 0] }, under: { pos: [12, 72, 78], tgt: [0, 4, 0] }, cascade: { pos: [-150, 150, 290], tgt: [-50, 45, 0] } };
+const TH = 76;            // bench top height, cm (the case sits on a work bench)
+const PT = 12.9 + TH;    // plate top above the floor, cm
+const VIEWS = { iso: { pos: [-80, 78 + TH, 122], tgt: [4, 8 + TH, 0] }, top: { pos: [0, 110 + TH, 0.5], tgt: [0, PT, 0] }, oper: { pos: [8, 66 + TH, 82], tgt: [0, PT, 0] }, under: { pos: [12, 72 + TH, 78], tgt: [0, 4 + TH, 0] }, cascade: { pos: [-160, 175, 310], tgt: [-50, 70, 0] } };
 function setView(name) {
   const v = VIEWS[name]; camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update();
   document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
@@ -214,10 +216,11 @@ function applyToggles() {
   if (nodes.LidHinge) nodes.LidHinge.rotation.x = $('lid').checked ? THREE.MathUtils.degToRad(-105) : 0;
   if (nodes.Cascade) nodes.Cascade.visible = $('cascade').checked;
   if (nodes.FillWhip) nodes.FillWhip.visible = $('whip').checked;
+  if (nodes.Bench) nodes.Bench.visible = $('bench').checked;
   const showTags = $('tags').checked;
   tagObjs.forEach(t => { t.lbl.visible = showTags && (t.under ? !plate && $('piping').checked : true) && (t.anchor.name.startsWith('PM-') ? $('cascade').checked : true); });
 }
-['plate', 'piping', 'mimic', 'labels', 'tags', 'lid', 'cascade', 'whip'].forEach(id => $(id).addEventListener('change', applyToggles));
+['plate', 'piping', 'mimic', 'labels', 'tags', 'lid', 'cascade', 'whip', 'bench'].forEach(id => $(id).addEventListener('change', applyToggles));
 function resize() { renderer.setSize(W(), H()); labelRenderer.setSize(W(), H()); camera.aspect = W() / H(); camera.updateProjectionMatrix(); }
 addEventListener('resize', resize);
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); labelRenderer.render(scene, camera); });

@@ -334,7 +334,8 @@ def lights_cameras():
         o = bpy.data.objects.new(name, cd); bpy.context.collection.objects.link(o); o.location = loc
         c = o.constraints.new('TRACK_TO'); c.target = focus; c.track_axis = 'TRACK_NEGATIVE_Z'; c.up_axis = 'UP_Y'
         return o
-    cam('Cam_iso', (-0.78, -0.82, 0.66), 42); cam('Cam_top', (0.0, -0.12, 1.25), 50)   # slight front offset: a dead-vertical TRACK_TO camera has an undefined roll; cam('Cam_front', (0.0, -1.25, 0.42), 45); cam('Cam_operator', (0.16, -0.72, 0.62), 40)
+    # Cam_top is offset 120 mm to the front: a dead-vertical TRACK_TO camera has an undefined roll
+    cam('Cam_iso', (-0.78, -0.82, 0.66), 42); cam('Cam_top', (0.0, -0.12, 1.25), 50); cam('Cam_front', (0.0, -1.25, 0.42), 45); cam('Cam_operator', (0.16, -0.72, 0.62), 40)
     sc = bpy.context.scene
     for eng in ('BLENDER_EEVEE_NEXT', 'BLENDER_EEVEE'):
         try: sc.render.engine = eng; break
@@ -521,8 +522,12 @@ def hose_curve(name, pts, parent, r=5.0, m=None):
     o = bpy.data.objects.new(name, cu); bpy.context.collection.objects.link(o); o.parent = parent; o.data.materials.append(m or M['hose']); return o
 
 def whip_path(chain_x, last_y, chain_z, qx, qy, qz):
-    """Supply whip: off the bleed tee, down to the floor beside the case, along the front, over the front rim into the socket."""
+    """Supply whip from the chain bleed to its panel socket. On the floor: down beside the case, along the front, over the rim.
+    On the bench (TABLE_H > 0): down from the bleed, sagging past the bench's front-left corner, over the front rim."""
     front = -(CASE_EX_Y / 2) * MM                                     # case front outer wall (y, m)
+    if TABLE_H:
+        return [(chain_x, last_y - 0.067, chain_z), (chain_x + 0.10, last_y - 0.20, chain_z - 0.28), (-0.50, -0.42, TABLE_H + 0.06),
+                (qx - 0.02, -0.30, TABLE_H + 0.14), (qx, front - 0.03, TABLE_H + 0.20), (qx, qy - 0.045, qz + 0.03), (qx, qy, qz)]
     return [(chain_x, last_y - 0.067, chain_z), (chain_x + 0.05, last_y - 0.20, 1.20), (-0.36, front - 0.10, 0.10),
             (qx - 0.05, front - 0.10, 0.06), (qx, front - 0.03, 0.20), (qx, qy - 0.045, qz + 0.03), (qx, qy, qz)]
 
@@ -621,7 +626,7 @@ def reroute_whips():
         old = bpy.data.objects.get(f'{tag}_whip')
         if old: cu = old.data; bpy.data.objects.remove(old, do_unlink=True); bpy.data.curves.remove(cu)
         grp = bpy.data.objects[f'{tag}_grp']
-        qx, qy, qz = P(qc_x, 290, PLATE_TOP + 56)
+        qx, qy, qz = P(qc_x, 290, PLATE_TOP + 56); qz += TABLE_H
         hose_curve(f'{tag}_whip', whip_path(wx + 0.16, ys[-1], 1.56, qx, qy, qz), grp, r=5.0); n += 1
     return f'rerouted {n} whips'
 
@@ -634,3 +639,47 @@ def render_cascade():
         sc.view_settings.exposure = e0
 
 _RUN.update(repaint=repaint_cylinders, whips5=reroute_whips, cascade_render=render_cascade)
+
+
+# ---------------------------------------------------------------- pass 6: work bench (the case at working height)
+TABLE_H = 0.76                      # bench top height (m). 0 = case on the floor (passes 1-5)
+BENCH_C, BENCH_L, BENCH_W = (0.05, 0.0), 1000, 700   # bench centre (m) and top size (mm)
+
+def reroute_fill_whip():
+    """Fill whip from QC-06 over the front rim, off the bench front-right, down to the 3 L cylinder standing on the floor."""
+    old = bpy.data.objects.get('FillWhipHose')
+    if old: cu = old.data; bpy.data.objects.remove(old, do_unlink=True); bpy.data.curves.remove(cu)
+    w = bpy.data.objects['FillWhip']
+    qx, qy, qz = P(435, 290, PLATE_TOP + 56); qz += TABLE_H
+    cx, cy = 0.44, -0.44
+    if TABLE_H:
+        pts = [(qx, qy, qz), (qx, qy - 0.03, qz + 0.09), (qx + 0.07, qy - 0.16, TABLE_H + 0.20), (qx + 0.18, -0.38, TABLE_H + 0.02), (cx + 0.02, cy - 0.10, 0.62), (cx, cy, 0.53)]
+    else:
+        pts = [(qx, qy, qz), (qx, qy - 0.03, qz + 0.09), (qx + 0.07, qy - 0.16, 0.20), (cx - 0.04, cy + 0.03, 0.40), (cx, cy, 0.50)]
+    hose_curve('FillWhipHose', pts, w, r=5.0); return 'fill whip rerouted'
+
+def build_bench():
+    """Stainless work bench: 30 mm top, four Ø38 legs on rubber feet, aprons, lower shelf. Lifts the case assembly, its focus,
+    the panel cameras and the lights by TABLE_H (cascade cylinders and the 3 L fill cylinder stay on the floor) and reroutes both whip sets."""
+    if 'Bench' in bpy.data.objects: return 'bench already built'
+    b = empty('Bench'); bx, by = BENCH_C; hl, hw = BENCH_L * MM / 2, BENCH_W * MM / 2
+    steel = mat('BenchSteel', (0.62, 0.63, 0.65), 0.9, 0.35)
+    box('Bench_top', BENCH_L, BENCH_W, 30, (bx, by, TABLE_H - 0.015), steel, b, bevel=2)
+    box('Bench_apron_f', BENCH_L - 100, 30, 60, (bx, by - hw + 0.035, TABLE_H - 0.06), steel, b)
+    box('Bench_apron_b', BENCH_L - 100, 30, 60, (bx, by + hw - 0.035, TABLE_H - 0.06), steel, b)
+    for i, (sx, sy) in enumerate(((-1, -1), (1, -1), (-1, 1), (1, 1))):
+        lx, ly = bx + sx * (hl - 0.05), by + sy * (hw - 0.05)
+        cyl(f'Bench_leg{i+1}', 19, (TABLE_H - 0.03) * 1000, (lx, ly, (TABLE_H - 0.03) / 2), steel, b, verts=24)
+        cyl(f'Bench_foot{i+1}', 22, 12, (lx, ly, 0.006), M['rubber'], b, verts=24)
+    box('Bench_shelf', BENCH_L - 140, BENCH_W - 140, 20, (bx, by, 0.22), steel, b, bevel=1)
+    for n in ('Case', 'LidHinge', 'Panel', 'Labels', 'Mimic', 'Piping', 'Focus', 'Cam_iso', 'Cam_top', 'Cam_front', 'Cam_operator', 'Cam_under', 'Key', 'Fill', 'Rim'):
+        o = bpy.data.objects.get(n)
+        if o: o.location.z += TABLE_H
+    cf = bpy.data.objects.get('CascadeFocus')
+    if cf: cf.location = (-0.50, 0.05, 0.85)
+    cc = bpy.data.objects.get('Cam_cascade')
+    if cc: cc.location = (-1.55, -3.1, 1.75)
+    reroute_whips(); reroute_fill_whip()
+    return 'bench ok'
+
+_RUN.update(bench=build_bench, fillwhip=reroute_fill_whip)
