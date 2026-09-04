@@ -173,8 +173,11 @@ const grid = new THREE.GridHelper(600, 60, 0xc6ccd3, 0xd6dbe0); grid.position.y 
 const TH = 76;            // bench top height, cm (the case sits on a work bench)
 const PT = 12.9 + TH;    // plate top above the floor, cm
 const VIEWS = { iso: { pos: [-80, 78 + TH, 122], tgt: [4, 8 + TH, 0] }, top: { pos: [0, 110 + TH, 0.5], tgt: [0, PT, 0] }, oper: { pos: [8, 66 + TH, 82], tgt: [0, PT, 0] }, under: { pos: [12, 72 + TH, 78], tgt: [0, 4 + TH, 0] }, cascade: { pos: [-160, 175, 310], tgt: [-50, 70, 0] } };
+let currentView = 'iso'; let modelLoaded = false;
 function setView(name) {
+  currentView = name;
   const v = VIEWS[name]; camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update();
+  if (modelLoaded) applyToggles();
   document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
   if (name === 'under') { document.getElementById('plate').checked = false; document.getElementById('mimic').checked = false; document.getElementById('labels').checked = false; applyToggles(); }
 }
@@ -204,6 +207,7 @@ new GLTFLoader().load('models/panel.glb?v=8', (g) => {   // bump ?v= with every 
     lbl.position.copy(anchor.worldToLocal(new THREE.Vector3(c.x, box.max.y, c.z))); anchor.add(lbl); tagObjs.push({ lbl, anchor, under: /^(CV|PSV|VB|HDR)/.test(name) });
   }
   scene.add(model); applyToggles();
+  modelLoaded = true; applyToggles();
   if (hint) hint.textContent = 'Blender model · hover a tag for its duty · centimetres';
 }, undefined, () => { if (hint) hint.textContent = 'The Blender model (models/panel.glb) did not load.'; });
 const $ = id => document.getElementById(id);
@@ -218,7 +222,7 @@ function applyToggles() {
   if (nodes.FillWhip) nodes.FillWhip.visible = $('whip').checked;
   if (nodes.Bench) nodes.Bench.visible = $('bench').checked;
   const showTags = $('tags').checked;
-  tagObjs.forEach(t => { t.lbl.visible = showTags && (t.under ? !plate && $('piping').checked : true) && (t.anchor.name.startsWith('PM-') ? $('cascade').checked : true); });
+  tagObjs.forEach(t => { t.lbl.visible = showTags && (t.under ? !plate && $('piping').checked : true) && (t.anchor.name.startsWith('PM-') ? $('cascade').checked && !['top', 'oper', 'under'].includes(currentView) : true); });   // CSS2D tags have no depth occlusion: the cascade bleed tags project onto the plate in the plate views
 }
 ['plate', 'piping', 'mimic', 'labels', 'tags', 'lid', 'cascade', 'whip', 'bench'].forEach(id => $(id).addEventListener('change', applyToggles));
 function resize() { renderer.setSize(W(), H()); labelRenderer.setSize(W(), H()); camera.aspect = W() / H(); camera.updateProjectionMatrix(); }
