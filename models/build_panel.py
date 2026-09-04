@@ -353,16 +353,23 @@ def render(view):
     return sc.render.filepath
 
 def convert_text_and_curves():
-    dg = bpy.context.evaluated_depsgraph_get(); n = 0
+    """Text and bevelled curves → meshes for the glTF export. Parent FIRST, then set the world matrix: assigning .parent
+    afterwards keeps the local transform, so a parent that is not at the origin gets added twice (on the bench pass every
+    label and tube exported 760 mm above the plate). Each converted object is checked against the original world matrix."""
+    dg = bpy.context.evaluated_depsgraph_get(); n = 0; bad = []
     for o in [x for x in bpy.data.objects if x.type in ('FONT', 'CURVE')]:
+        orig = o.matrix_world.copy()
         me = bpy.data.meshes.new_from_object(o.evaluated_get(dg))
         new = bpy.data.objects.new(o.name + '_m', me); bpy.context.collection.objects.link(new)
-        new.matrix_world = o.matrix_world.copy(); new.parent = o.parent
+        new.parent = o.parent
         if o.parent: new.matrix_parent_inverse = o.matrix_parent_inverse.copy()
+        new.matrix_world = orig
         for slot in o.data.materials:
             if slot and slot.name not in [m.name for m in me.materials if m]: me.materials.append(slot)
         bpy.data.objects.remove(o, do_unlink=True); n += 1
-    return f'converted {n}'
+        bpy.context.view_layer.update()
+        if max(abs(a - b) for ra, rb in zip(new.matrix_world, orig) for a, b in zip(ra, rb)) > 1e-5: bad.append(new.name)
+    return f'converted {n}' + (f' — WARNING {len(bad)} objects moved during conversion: {bad[:5]}' if bad else ', all transforms preserved')
 
 def export_glb():
     for o in bpy.data.objects: o.select_set(False)
