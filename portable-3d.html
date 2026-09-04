@@ -35,6 +35,9 @@
   #stage { position: relative; border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; background: #e9edf1; box-shadow: 0 1px 3px rgba(10,20,35,.08); }
   #stage canvas { display: block; width: 100%; height: auto; }
   #stage .fallback { padding: 40px; text-align: center; color: var(--page-muted); font-size: 14px; }
+  .gallery { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .gallery figure { margin: 0; } .gallery img { width: 100%; border: 1px solid var(--rule); border-radius: 6px; display: block; }
+  .gallery figcaption { font-size: 12.5px; color: var(--page-muted); margin-top: 6px; }
 
   main.doc { max-width: 1180px; margin: 0 auto; padding: 26px 24px 80px; }
   main.doc h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--page-muted); border-bottom: 1px solid var(--rule); padding-bottom: 8px; margin: 38px 0 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
@@ -54,9 +57,9 @@
 <body>
 <header class="page">
   <div class="head-text">
-  <div class="eyebrow">BSD-PFS-001 · 3D PASS 2 · 2026-09-04 · Generated part meshes from the home GPU box, procedural fallback</div>
+  <div class="eyebrow">BSD-PFS-001 · 3D PASS 3 · 2026-09-04 · Built in Blender from the BSD-PFS-003 arrangement</div>
   <h1>Portable Fill Station — 3D arrangement</h1>
-  <p>The REV A panel as a physical object, built from the BSD-PFS-003 arrangement: a Pelican 1550 with the aluminium plate 30 mm below the rim, gauges at the back, needle valves in the middle, six labelled couplings along the front edge with the fill-line bleed beside the product coupling, and the fill whip over the rim to a 3 L cylinder. Drag to orbit, scroll to zoom. Booster and analyser travel in their own cases and are not shown.</p>
+  <p>The REV A panel modelled in Blender to the BSD-PFS-003 dimensions: a Pelican 1550 with the 460 × 350 × 4 mm plate 30 mm below the rim, three 63 mm gauges with dials at the back, needle valves with gas-coloured knurled knobs, six couplings on bulkhead adaptors along the front, the fill-line bleed, engraved tags and colour bands, the fill whip over the rim to a 3 L cylinder, and three supply whips coiled in the lid. Drag to orbit, scroll to zoom. Booster and analyser travel in their own cases and are not shown.</p>
   </div>
   <div class="nav-row">
     <a href="portable-pid.html">← P&amp;ID REV A</a>
@@ -74,8 +77,7 @@
     <label><input type="checkbox" id="lid" checked> Lid open</label>
     <label><input type="checkbox" id="labels" checked> Engraved labels</label>
     <label><input type="checkbox" id="whip" checked> Fill whip &amp; cylinder</label>
-    <label><input type="checkbox" id="glb"> Generated meshes (rough)</label>
-    <span class="hint">Units: centimetres · Pelican 1550 · plate 460 × 350 mm</span>
+    <span class="hint">Loading the Blender model…</span>
   </div>
   <div id="stage"><div class="fallback">Loading the 3D viewer…</div></div>
 </div>
@@ -103,8 +105,16 @@
     <li>The vent bulkhead exits the back wall behind the plate, below the rim, so the discharge is outside the case with the lid open or shut.</li>
   </ul>
 
-  <h2>Generated part meshes</h2>
-  <p>The gauges, needle valves, couplings and digital gauge are loaded from <span class="mono">models/&lt;slot&gt;.glb</span> when those files exist. They were produced on the home GPU box by Hunyuan3D (via Modly) and simplified for the web; the viewer rescales each mesh by its bounding box to the slot size, so absolute scale in the file does not matter but +Y must be up. The first set (2026-09-04) was generated from AI-drawn stand-in images because the vendor sites blocked photo downloads, so the shapes are generic and untextured and lose the gas colour coding. The page therefore shows the procedural parts by default; the toggle swaps the generated meshes in for comparison. Regenerating from real product photographs (WIKA 232.50, Swagelok SS-1RS4 or FAV FNV, FAV FDQRCO2, WIKA CPG1500) is the step that would make them representative. Provenance per slot is in <span class="mono">models/MODELS.md</span>.</p>
+  <h2>Rendered views</h2>
+  <div class="gallery">
+    <figure><img src="renders/iso.png" alt="Isometric render of the open case with the panel" loading="lazy"><figcaption>Isometric</figcaption></figure>
+    <figure><img src="renders/top.png" alt="Plate seen from above" loading="lazy"><figcaption>Plate from above</figcaption></figure>
+    <figure><img src="renders/operator.png" alt="Operator's view over the front rim" loading="lazy"><figcaption>Operator's view</figcaption></figure>
+    <figure><img src="renders/front.png" alt="Front elevation" loading="lazy"><figcaption>Front</figcaption></figure>
+  </div>
+
+  <h2>How the model is made</h2>
+  <p>A parametric Blender script (<span class="mono">models/build_panel.py</span>) builds every part from the BSD-PFS-003 numbers: the case as a bevelled tub with a hinged, recessed lid; the plate with its Ø67, Ø14.5 and Ø6.5 holes cut; gauges with bezel, dial, ticks, numerals and a needle; needle valves with knurled knobs in gas colours; couplings on bulkhead adaptors with colour rings; the digital gauge; engraved tags and paint-filled bands; the fill whip as a bevelled curve to a 3 L cylinder. The source file is <span class="mono">models/portable-fill-panel.blend</span>; the web viewer loads the exported <span class="mono">models/panel.glb</span>. Changing a position on the GA and re-running the script regenerates everything.</p>
 
   <h2>What this pass does not decide</h2>
   <ul class="list">
@@ -120,311 +130,55 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const stage = document.getElementById('stage');
 stage.textContent = '';
-const W = () => stage.clientWidth || 1200;
-const H = () => Math.round(W() * 0.58);
-
+const W = () => stage.clientWidth || 1200, H = () => Math.round(W() * 0.58);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.setSize(W(), H());
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2)); renderer.setSize(W(), H());
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xe9edf1);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xe9edf1);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 const camera = new THREE.PerspectiveCamera(36, W() / H(), 1, 1500);
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.maxPolarAngle = Math.PI / 2 - 0.03;
-controls.minDistance = 20;
-controls.maxDistance = 260;
+controls.enableDamping = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+controls.maxPolarAngle = Math.PI / 2 - 0.03; controls.minDistance = 20; controls.maxDistance = 260;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa1a8, 0.6));
+const sun = new THREE.DirectionalLight(0xffffff, 2.0); sun.position.set(-60, 110, 60); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048); Object.assign(sun.shadow.camera, { left: -90, right: 90, top: 90, bottom: -90, near: 20, far: 300 }); sun.shadow.bias = -0.0005; scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), new THREE.MeshStandardMaterial({ color: 0xdfe4e9, roughness: 1 }));
+ground.rotation.x = -Math.PI / 2; ground.position.y = -0.85; ground.receiveShadow = true; scene.add(ground);
+const grid = new THREE.GridHelper(300, 30, 0xc6ccd3, 0xd6dbe0); grid.position.y = -0.84; scene.add(grid);
 
-/* ---------- lights ---------- */
-scene.add(new THREE.HemisphereLight(0xffffff, 0x9aa1a8, 1.15));
-const sun = new THREE.DirectionalLight(0xffffff, 2.1);
-sun.position.set(70, 110, 50);
-sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
-Object.assign(sun.shadow.camera, { left: -90, right: 90, top: 90, bottom: -90, near: 20, far: 300 });
-sun.shadow.bias = -0.0006;
-scene.add(sun);
-const fill = new THREE.DirectionalLight(0xdfe8ff, 0.7);
-fill.position.set(-60, 40, -30);
-scene.add(fill);
-
-/* ---------- materials ---------- */
-const std = (color, roughness = 0.6, metalness = 0.0) => new THREE.MeshStandardMaterial({ color, roughness, metalness });
-const M = {
-  case: std(0x3b4046, 0.9, 0.02),
-  caseInner: std(0x262a2f, 0.95, 0.0),
-  rubber: std(0x111315, 0.95, 0.0),
-  plate: std(0xc6cbd0, 0.45, 0.22),
-  plateEdge: std(0xaab0b6, 0.5, 0.22),
-  steel: std(0xe2e6e9, 0.3, 0.35),
-  steelDark: std(0xaab0b5, 0.4, 0.3),
-  white: std(0xf7f8f9, 0.5, 0.0),
-  black: std(0x161a1d, 0.55, 0.1),
-  screen: std(0x0d1a14, 0.25, 0.3),
-  o2: std(0x15803d, 0.5, 0.15),
-  he: std(0x8a5a2b, 0.5, 0.15),
-  air: std(0x1d4ed8, 0.5, 0.15),
-  mix: std(0x1c2530, 0.5, 0.15),
-  hose: std(0x23272b, 0.9, 0.0),
-  cyl: std(0x4a5056, 0.45, 0.3),
-  brass: std(0xc9a060, 0.35, 0.5),
-  ground: std(0xdfe4e9, 1.0, 0.0),
-  foam: std(0x2f3438, 1.0, 0.0),
-};
-
-/* ---------- helpers ---------- */
-const root = new THREE.Group();
-scene.add(root);
-function mesh(geo, mat, x, y, z, parent = root) {
-  const m = new THREE.Mesh(geo, mat);
-  m.position.set(x, y, z);
-  m.castShadow = true; m.receiveShadow = true;
-  parent.add(m);
-  return m;
-}
-const box = (w, h, d, mat, x, y, z, parent) => mesh(new THREE.BoxGeometry(w, h, d), mat, x, y, z, parent);
-const cylY = (r, h, mat, x, y, z, parent, seg = 40) => mesh(new THREE.CylinderGeometry(r, r, h, seg), mat, x, y, z, parent);
-
-function canvasTexture(draw, w, h) {
-  const c = document.createElement('canvas'); c.width = w; c.height = h;
-  draw(c.getContext('2d'), w, h);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
-  return t;
-}
-function engraved(str, wCm, hCm, parent, x, y, z, color = '#1c2530', weight = 600) {
-  const px = 40;
-  const tex = canvasTexture((ctx, w, h) => {
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = color;
-    ctx.font = `${weight} ${Math.round(h * 0.62)}px "Helvetica Neue", Arial, sans-serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(str, w / 2, h / 2 + 1);
-  }, Math.round(wCm * px), Math.round(hCm * px));
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(wCm, hCm), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
-  m.rotation.x = -Math.PI / 2;
-  m.position.set(x, y, z);
-  parent.add(m);
-  return m;
-}
-function gaugeFace() {
-  return canvasTexture((ctx, w, h) => {
-    const cx = w / 2, cy = h / 2, r = w / 2;
-    ctx.fillStyle = '#fafbfc'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#1c2530'; ctx.lineWidth = 3;
-    const a0 = Math.PI * 0.75, a1 = Math.PI * 2.25; // 0 → 400 bar over 270°
-    for (let i = 0; i <= 40; i++) {
-      const a = a0 + (a1 - a0) * i / 40, major = i % 5 === 0;
-      const r1 = r * 0.86, r0 = r * (major ? 0.72 : 0.79);
-      ctx.lineWidth = major ? 3 : 1.5;
-      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); ctx.stroke();
-      if (major) {
-        ctx.fillStyle = '#1c2530'; ctx.font = `700 ${Math.round(w * 0.085)}px "Helvetica Neue", Arial`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(String(i * 10), cx + Math.cos(a) * r * 0.58, cy + Math.sin(a) * r * 0.58);
-      }
-    }
-    ctx.fillStyle = '#5b6b7d'; ctx.font = `600 ${Math.round(w * 0.07)}px "Helvetica Neue", Arial`;
-    ctx.fillText('bar', cx, cy + r * 0.28);
-    ctx.fillStyle = '#b91c1c'; ctx.font = `700 ${Math.round(w * 0.055)}px "Helvetica Neue", Arial`;
-    ctx.fillText('USE NO OIL · O₂', cx, cy + r * 0.42);
-    ctx.strokeStyle = '#b91c1c'; ctx.lineWidth = 4; ctx.lineCap = 'round';
-    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a0) * r * 0.8, cy + Math.sin(a0) * r * 0.8); ctx.stroke();
-    ctx.fillStyle = '#1c2530'; ctx.beginPath(); ctx.arc(cx, cy, r * 0.06, 0, Math.PI * 2); ctx.fill();
-  }, 512, 512);
-}
-const faceTex = gaugeFace();
-
-/* ---------- Pelican 1550 (cm) — interior 47.3 × 36.0, body depth 14.9, lid depth 4.4 ---------- */
-const IX = 47.3, IZ = 36.0, BODY_D = 14.9, LID_D = 4.4, T = 2.6, FLOOR = 1.0;
-const EX = IX + 2 * T, EZ = IZ + 2 * T, RIM_Y = FLOOR + BODY_D;
-const body = new THREE.Group(); root.add(body);
-box(EX, FLOOR, EZ, M.case, 0, FLOOR / 2, 0, body);
-box(EX, BODY_D, T, M.case, 0, FLOOR + BODY_D / 2, -(EZ / 2 - T / 2), body);
-box(EX, BODY_D, T, M.case, 0, FLOOR + BODY_D / 2, (EZ / 2 - T / 2), body);
-box(T, BODY_D, IZ, M.case, -(EX / 2 - T / 2), FLOOR + BODY_D / 2, 0, body);
-box(T, BODY_D, IZ, M.case, (EX / 2 - T / 2), FLOOR + BODY_D / 2, 0, body);
-box(IX, 0.6, IZ, M.caseInner, 0, FLOOR + 0.3, 0, body); // interior floor
-box(EX + 1.2, 0.9, EZ + 1.2, M.caseInner, 0, RIM_Y + 0.45, 0, body); // rim / seal lip
-[[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => box(6, 0.8, 6, M.rubber, sx * (EX / 2 - 5), -0.4, sz * (EZ / 2 - 5), body)); // feet
-box(15, 2.2, 2.2, M.rubber, 0, 8, EZ / 2 + 1.1, body); // handle
-[-14, 14].forEach(x => box(5.2, 4.2, 1.6, M.caseInner, x, RIM_Y - 2.5, EZ / 2 + 0.8, body)); // latches
-
-/* lid — hinged at the back top edge */
-const lid = new THREE.Group();
-lid.position.set(0, RIM_Y + 0.9, -EZ / 2);
-root.add(lid);
-box(EX, LID_D + FLOOR, EZ, M.case, 0, (LID_D + FLOOR) / 2, EZ / 2, lid);
-box(IX, 0.4, IZ, M.caseInner, 0, -0.15, EZ / 2, lid); // inner face recess
-box(IX - 3, 1.6, IZ - 3, M.foam, 0, -0.95, EZ / 2, lid); // lid organiser / foam
-engraved('WHIPS STOW HERE · LID ORGANISER', 30, 2.0, lid, 0, -1.78, EZ / 2, '#9aa3ad', 600).rotation.x = Math.PI / 2;
-const setLid = (open) => { lid.rotation.x = open ? -1.83 : 0; };
-
-/* ---------- plate — 46 × 35 cm, top 3 cm below the rim ---------- */
-const PT = RIM_Y - 3.0; // plate top
-const PLATE_W = 46, PLATE_D = 35;
-box(PLATE_W, 0.4, PLATE_D, M.plate, 0, PT - 0.2, 0);
-[[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => cylY(0.6, PT - FLOOR - 0.4, M.steelDark, sx * (PLATE_W / 2 - 1.6), FLOOR + (PT - FLOOR - 0.4) / 2, sz * (PLATE_D / 2 - 1.6)));
-const labels = new THREE.Group(); root.add(labels);
-const L = (str, w, x, z, color) => engraved(str, w, 1.5, labels, x, PT + 0.03, z, color);
-
-/* colour bands: gauge → valve → coupling per supply column */
-const COLS = [
-  { x: -17, mat: M.o2, gas: 'O₂', pi: 'PI-01', nv: 'NV-01', qc: 'QC-01' },
-  { x: -9.5, mat: M.he, gas: 'He', pi: 'PI-02', nv: 'NV-02', qc: 'QC-02' },
-  { x: -2, mat: M.air, gas: 'AIR', pi: 'PI-03', nv: 'NV-03', qc: 'QC-03' },
-];
-const Z_G = -10, Z_V = 1, Z_Q = 11.5;
-COLS.forEach(c => box(1.4, 0.06, Z_Q - Z_G + 3.5, c.mat, c.x, PT + 0.03, (Z_G + Z_Q) / 2));
-box(18.5, 0.06, 1.2, M.mix, 13, PT + 0.03, Z_Q + 2.6); // MIX strip under the booster/product couplings
-
-/* ---------- generated-mesh slots: models/<slot>.glb replaces the procedural stand-in when present ---------- */
-const SLOTS = { gauge: { size: 6.8 }, valve: { size: 6.0 }, coupling: { size: 4.6 }, digital: { size: 8.2 } };
-const INSTANCES = []; // { slot, x, z, proc (procedural group), glb (clone or null) }
-const slotTemplates = {};
-const gltfLoader = new GLTFLoader();
-function normaliseSlot(obj, size) {
-  const box = new THREE.Box3().setFromObject(obj); const dims = box.getSize(new THREE.Vector3());
-  const s = size / Math.max(dims.x, dims.y, dims.z); obj.scale.setScalar(s);
-  const b2 = new THREE.Box3().setFromObject(obj);
-  obj.position.set(-(b2.min.x + b2.max.x) / 2, -b2.min.y, -(b2.min.z + b2.max.z) / 2);
-  obj.traverse(m => { if (m.isMesh) { m.castShadow = m.receiveShadow = true; if (!m.material || !m.material.map) m.material = M.steel; } });
-  const wrap = new THREE.Group(); wrap.add(obj); return wrap;
-}
-function loadSlot(name) {
-  return new Promise(res => gltfLoader.load(`models/${name}.glb`, g => { slotTemplates[name] = normaliseSlot(g.scene, SLOTS[name].size); res(true); }, undefined, () => res(false)));
-}
-function registerInstance(slot, x, z, proc) { INSTANCES.push({ slot, x, z, proc, glb: null }); }
-function applySlots(useGlb) {
-  INSTANCES.forEach(inst => {
-    const tpl = slotTemplates[inst.slot];
-    if (tpl && !inst.glb) { inst.glb = tpl.clone(); inst.glb.position.set(inst.x, PT, inst.z); root.add(inst.glb); }
-    const show = useGlb && !!tpl;
-    inst.proc.visible = !show; if (inst.glb) inst.glb.visible = show;
-  });
-}
-
-/* gauges */
-function gauge(x, z) {
-  const g = new THREE.Group(); g.position.set(x, PT, z); root.add(g); registerInstance('gauge', x, z, g);
-  cylY(3.3, 1.4, M.steel, 0, 0.7, 0, g);
-  cylY(2.6, 3.0, M.steelDark, 0, -1.7, 0, g);
-  const face = new THREE.Mesh(new THREE.CircleGeometry(2.85, 48), new THREE.MeshBasicMaterial({ map: faceTex }));
-  face.rotation.x = -Math.PI / 2; face.position.y = 1.42; g.add(face);
-  const glass = new THREE.Mesh(new THREE.CircleGeometry(2.9, 48), new THREE.MeshPhysicalMaterial({ color: 0xffffff, transmission: 0.9, roughness: 0.05, thickness: 0.2, transparent: true, opacity: 0.35 }));
-  glass.rotation.x = -Math.PI / 2; glass.position.y = 1.5; g.add(glass);
-}
-COLS.forEach(c => { gauge(c.x, Z_G); L(`${c.pi} · ${c.gas} SUPPLY`, 7, c.x, Z_G - 4.6); });
-
-/* digital master gauge PI-04 */
-const dg = new THREE.Group(); dg.position.set(15, PT, Z_G); root.add(dg); registerInstance('digital', 15, Z_G, dg);
-cylY(1.25, 1.6, M.steel, 0, 0.8, 0, dg);
-box(5.6, 6.4, 2.6, M.black, 0, 1.6 + 3.2, 0, dg);
-const screen = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 2.6), new THREE.MeshBasicMaterial({
-  map: canvasTexture((ctx, w, h) => {
-    ctx.fillStyle = '#0d1a14'; ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = '#9ff0b8'; ctx.font = `700 ${Math.round(h * 0.6)}px ui-monospace, Menlo, monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('0.0 bar', w / 2, h / 2);
-  }, 460, 260) }));
-screen.position.set(0, 5.6, 1.31); dg.add(screen);
-L('PI-04 · MASTER (DIGITAL)', 8.5, 15, Z_G - 4.6);
-
-/* needle valves */
-function needle(x, z, knob) {
-  const g = new THREE.Group(); g.position.set(x, PT, z); root.add(g); registerInstance('valve', x, z, g);
-  cylY(1.35, 0.8, M.steel, 0, 0.4, 0, g);        // panel nut
-  cylY(1.0, 3.2, M.steel, 0, 0.8 + 1.6, 0, g);   // bonnet
-  cylY(0.45, 1.0, M.steelDark, 0, 4.0 + 0.5, 0, g); // stem
-  cylY(1.9, 1.3, knob, 0, 5.0 + 0.65, 0, g, 24);  // knob
-  for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; box(0.35, 1.3, 0.35, M.black, Math.cos(a) * 1.85, 5.65, Math.sin(a) * 1.85, g); } // knurl
-  cylY(3.4, 3.4, M.steelDark, 0, -1.7 - 0.4, 0, g, 16); // body under the plate (envelope)
-}
-COLS.forEach(c => { needle(c.x, Z_V, c.mat); L(`${c.nv} · ${c.gas}`, 6, c.x, Z_V + 4.2); });
-needle(9, Z_V, M.mix);  L('NV-04 · DIRECT', 7, 9, Z_V + 4.2);
-needle(17, Z_V, M.mix); L('NV-05 · TO BOOSTER', 8, 17, Z_V + 4.2);
-
-/* quick couplings */
-function coupling(x, z, key) {
-  const g = new THREE.Group(); g.position.set(x, PT, z); root.add(g); registerInstance('coupling', x, z, g);
-  cylY(1.7, 0.9, M.steel, 0, 0.45, 0, g);       // base nut
-  cylY(1.3, 2.6, M.steel, 0, 0.9 + 1.3, 0, g);  // socket
-  cylY(1.55, 0.7, key, 0, 3.5 + 0.35, 0, g);    // key ring in gas colour
-  cylY(0.9, 0.5, M.black, 0, 3.85 + 0.25, 0, g); // seal face
-  cylY(1.1, 3.0, M.steelDark, 0, -1.5 - 0.4, 0, g, 16); // bulkhead body under the plate
-}
-COLS.forEach(c => { coupling(c.x, Z_Q, c.mat); L(`${c.qc} · ${c.gas} IN`, 6.5, c.x, Z_Q + 4.4); });
-[[5.5, 'QC-04 · BOOSTER OUT'], [13, 'QC-05 · BOOSTER IN'], [20.5, 'QC-06 · PRODUCT']].forEach(([x, s]) => { coupling(x, Z_Q, M.mix); L(s, 7, x, Z_Q + 4.4); });
-
-/* fill-line bleed V-01 just before the product coupling */
-needle(19.5, 6, M.mix);
-engraved('V-01 · BLEED', 5, 1.2, labels, 19.5, PT + 0.03, 8.7, '#5b6b7d');
-
-/* vent bulkhead stub VB-01, back-left */
-cylY(0.75, 3.6, M.steel, -21, PT + 1.8, -15.5);
-box(2.4, 0.6, 2.4, M.steelDark, -21, PT + 3.9, -15.5);
-L('VB-01 VENT', 5, -18.5, -13.2, '#5b6b7d');
-L('PORTABLE FILL STATION · MODULE A · O₂ SERVICE — NO OIL · 200 bar FILL · PSV 220 bar', 38, 2, -16.2, '#5b6b7d');
-
-/* fill whip over the rim to a 3 L cylinder */
-const whipGroup = new THREE.Group(); root.add(whipGroup);
-const curve = new THREE.CatmullRomCurve3([
-  new THREE.Vector3(20.5, PT + 4.2, Z_Q), new THREE.Vector3(20.5, PT + 9, Z_Q + 3.5), new THREE.Vector3(28, PT + 8, 22),
-  new THREE.Vector3(40, 20, 27), new THREE.Vector3(52, 42, 27), new THREE.Vector3(54, 48.5, 26),
-]);
-mesh(new THREE.TubeGeometry(curve, 96, 0.5, 12, false), M.hose, 0, 0, 0, whipGroup);
-const cylX = 54, cylZ = 26, cylR = 5.0, cylH = 44;
-cylY(cylR, cylH, M.cyl, cylX, cylH / 2, cylZ, whipGroup);
-mesh(new THREE.SphereGeometry(cylR, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), M.cyl, cylX, cylH, cylZ, whipGroup);
-cylY(1.6, 2.2, M.brass, cylX, cylH + 4.6, cylZ, whipGroup);   // cylinder valve body
-box(3.4, 2.2, 3.4, M.brass, cylX, cylH + 6.2, cylZ, whipGroup); // DIN adaptor with bleed
-cylY(1.9, 0.7, M.black, cylX + 2.8, cylH + 4.6, cylZ, whipGroup, 16).rotation.z = Math.PI / 2; // handwheel
-engraved('3 L · 232 bar · O₂', 8, 1.4, whipGroup, cylX, 0.02, cylZ + 7.5, '#5b6b7d');
-
-/* ground */
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(600, 600), M.ground);
-ground.rotation.x = -Math.PI / 2; ground.position.y = -0.8; ground.receiveShadow = true; scene.add(ground);
-const grid = new THREE.GridHelper(300, 30, 0xc6ccd3, 0xd6dbe0);
-grid.position.y = -0.79; scene.add(grid);
-
-/* ---------- views & controls ---------- */
-const VIEWS = {
-  iso:   { pos: [-62, 60, 96], tgt: [6, 10, 2] },
-  top:   { pos: [0, 96, 0.5], tgt: [0, PT, 0] },
-  front: { pos: [0, 34, 104], tgt: [0, 12, 0] },
-  oper:  { pos: [6, 58, 70], tgt: [0, PT, 2] },
-};
-function setView(name) {
-  const v = VIEWS[name];
-  camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update();
-  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name)));
-}
+const PT = 12.9; // plate top, cm
+const VIEWS = { iso: { pos: [-62, 60, 96], tgt: [6, 10, 2] }, top: { pos: [0, 96, 0.5], tgt: [0, PT, 0] }, front: { pos: [0, 34, 104], tgt: [0, 12, 0] }, oper: { pos: [6, 58, 70], tgt: [0, PT, 2] } };
+function setView(name) { const v = VIEWS[name]; camera.position.set(...v.pos); controls.target.set(...v.tgt); controls.update(); document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.view === name))); }
 document.querySelectorAll('[data-view]').forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
-document.getElementById('lid').addEventListener('change', e => setLid(e.target.checked));
-document.getElementById('labels').addEventListener('change', e => { labels.visible = e.target.checked; });
-document.getElementById('whip').addEventListener('change', e => { whipGroup.visible = e.target.checked; });
-const glbToggle = document.getElementById('glb');
-glbToggle.addEventListener('change', e => applySlots(e.target.checked));
-Promise.all(Object.keys(SLOTS).map(loadSlot)).then(found => {
-  const n = found.filter(Boolean).length;
-  applySlots(glbToggle.checked);
-  const hint = document.querySelector('.toolbar .hint');
-  if (hint) hint.textContent = (n ? `${n} of 4 generated meshes available (toggle) · showing procedural parts · ` : 'no generated meshes — procedural parts · ') + 'centimetres · Pelican 1550 · plate 460 × 350 mm';
-});
-setLid(true); setView('iso');
+setView('iso');
 
+let lidHinge = null, labels = null, whip = null;
+const hint = document.querySelector('.toolbar .hint');
+new GLTFLoader().load('models/panel.glb', (g) => {
+  const model = g.scene; model.scale.setScalar(100); // metres → centimetres
+  model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material && o.material.transmission > 0) { o.castShadow = false; } } });
+  lidHinge = model.getObjectByName('LidHinge'); labels = model.getObjectByName('Labels'); whip = model.getObjectByName('FillWhip');
+  scene.add(model);
+  applyToggles();
+  if (hint) hint.textContent = 'Blender model · centimetres · Pelican 1550 · plate 460 × 350 mm';
+}, undefined, () => { if (hint) hint.textContent = 'The Blender model (models/panel.glb) did not load.'; });
+function applyToggles() {
+  if (lidHinge) lidHinge.rotation.x = document.getElementById('lid').checked ? THREE.MathUtils.degToRad(-105) : 0;
+  if (labels) labels.visible = document.getElementById('labels').checked;
+  if (whip) whip.visible = document.getElementById('whip').checked;
+}
+['lid', 'labels', 'whip'].forEach(id => document.getElementById(id).addEventListener('change', applyToggles));
 function resize() { renderer.setSize(W(), H()); camera.aspect = W() / H(); camera.updateProjectionMatrix(); }
 addEventListener('resize', resize);
-const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-controls.enableDamping = !reduce;
 renderer.setAnimationLoop(() => { controls.update(); renderer.render(scene, camera); });
 </script>
 </body>
