@@ -14,6 +14,10 @@
   }
   :root[data-theme="dark"] { --page:#161b22; --page-text:#dbe3ec; --page-muted:#93a3b5; --card:#1e2530; --rule:#333d4a; --accent:#7ea6ff; --warn:#f0b35a; }
 
+  .nav-row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 4px; }
+  .nav-row a { border: 1px solid var(--rule); background: var(--card); color: var(--page-text); padding: 8px 14px; border-radius: 8px; font: 600 12.5px/1 inherit; text-decoration: none; white-space: nowrap; }
+  .nav-row a:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-row a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--page); color: var(--page-text); font: 15px/1.55 "Helvetica Neue", Arial, ui-sans-serif, sans-serif; }
   header.page { max-width: 1180px; margin: 0 auto; padding: 34px 24px 18px; }
@@ -70,6 +74,13 @@
   <div class="eyebrow">BSD-PFS-001 · REV SK-A · 2026-09-04 · <b>Superseded 2026-09-04 by REV A → <a href="portable-pid.html" style="color:inherit">portable-pid.html</a></b> · kept as the verification record</div>
   <h1>Portable Fill Station — Module A fill panel</h1>
   <p>A partial-pressure decant and blending panel in a Pelican case: three keyed HP inlets (O₂ cascade, He cascade, air), a common manifold, one product outlet, and a booster loop switched in by two needle valves. Check the topology here; the final P&amp;ID (REV A) follows your answers to the decisions below.</p>
+  <div class="nav-row">
+    <a href="index.html">← Overview</a>
+    <a href="portable-pid.html">P&amp;ID</a>
+    <a href="portable-ga.html">2D</a>
+    <a href="portable-3d.html">3D</a>
+    <a href="boq.html">BOQ</a>
+  </div>
 </header>
 
 <div class="sheet-wrap">
