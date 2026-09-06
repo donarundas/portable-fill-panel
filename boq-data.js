@@ -6,7 +6,9 @@
  *
  * Every price carries its provenance, because mixing the two silently would be a lie:
  *   src 'quote'   a vendor's written offer against an RFQ reference — a real number
- *   src 'listing' a public catalogue or marketplace price — indicative, not offered to us
+ *   src 'listing' a catalogue or marketplace price — indicative, not offered to us. Case N Foam
+ *                 answered PFS-2609-12 by pointing at their own catalogue rather than quoting, so
+ *                 their price is theirs but still carries no validity or terms.
  * A line with no price in `quotes` is simply not priced yet, and is counted as such.
  *
  * The vendor selected on a line is the cheapest one that has a price. A vendor answer
@@ -47,11 +49,11 @@
     { id: 'nv', s: 'A', item: 'Needle valve ¼ in, panel-mount, 316 SS', tags: 'NV-01..05 · V-01 · V-11 · V-21 · V-31',
       spec: 'FAV FNV/MF/HP/02 10 000 psi (stem type to confirm) or Swagelok SS-1RS4 regulating stem 344 bar',
       qty: 9, unit: 'ea', vendors: ['FAV', 'SWB', 'SWM'],
-      quotes: { FAV: FAVQ(2275, 'FAV quote PFS-2609-03: ¼ NPT M×F 10 000 psi; panel nut and stem type not yet confirmed') } },
+      quotes: { FAV: FAVQ(2275, 'FAV quote PFS-2609-03; confirmed 2026-09-05 as the panel-mount type. Stem type, Cv, seat and packing materials and the panel hole size are still unanswered') } },
     { id: 'cv', s: 'A', item: 'Check valve ¼ in NPT M×F, 6000 psi', tags: 'CV-01..04 · CV-11..13 · CV-21..22 · CV-31',
       spec: 'FAV FAVCV/MF/04 (≈10 psi crack, Viton) or Swagelok SS-CHS4-1 (1 psig)',
       qty: 10, unit: 'ea', vendors: ['FAV', 'SWB', 'SWM'],
-      quotes: { FAV: FAVQ(1865, 'FAV quote: crack ≈10 psi; O-ring compound and a lower crack asked in the follow-up') } },
+      quotes: { FAV: FAVQ(1865, 'FAV quote; confirmed 2026-09-05: Viton O-ring, cracking pressure stays at 10 psi — they will try lower but do not commit') } },
     { id: 'psv', s: 'A', item: 'Relief valve ¼ in, set 220 bar', tags: 'PSV-01',
       spec: 'Swagelok SS-4R3A5 + spring F (206–275 bar) or FAV FRV ¼ in; plus one spare spring',
       qty: 1, unit: 'ea', vendors: ['SWB', 'SWM', 'FAV'], quotes: {} },
@@ -114,8 +116,8 @@
     { id: 'case', s: 'E', item: 'Hard case, interior ≈ 470 × 360 × 195 mm', tags: 'Pelican 1550 or Case N Foam EW/MAX',
       spec: 'waterproof, one Ø11.5 vent hole in the back wall', qty: 1, unit: 'ea', vendors: ['CNF', 'PELI', 'AMZ'],
       quotes: {
-        CNF: { price: 7050, src: 'listing', on: '2026-09-04', note: 'MAX540H190 on IndiaMART — an indicative listing, not an offer; RFQ PFS-2609-12 is out with Case N Foam' },
-        AMZ: { price: 42000, src: 'listing', on: '2026-09-04', note: 'Pelican 1550 with foam on Amazon.in, incl. tax — the imported original, six times the local case' },
+        CNF: { price: 5500, src: 'listing', on: '2026-09-05', note: 'EW4920: interior 490 × 362 × 195, base 149, lid 46 — the drop-in for the Pelican 1550, whose 149 mm base BSD-PFS-003 is dimensioned around, so no change to the standoffs or the section. Case N Foam answered PFS-2609-12 with five models but no quotation, so this is their own catalogue price: GST extra, free shipping, no validity. EW4820-W is ₹3,750 and also fits (480 × 370 × 200) but its 162 mm base drops the plate to 43 below the rim, which changes the GA — worth ₹1,750 only if that redraw is wanted. EW4820 is ₹5,480 with 5 mm width clearance. MAX505 (350 wide) and MAX465H220 (335 wide) do not fit a 350 mm plate at all' },
+        AMZ: { price: 42000, src: 'listing', on: '2026-09-04', note: 'Pelican 1550 with foam on Amazon.in, incl. tax — the imported original, eleven times the local case' },
       } },
     { id: 'plate', s: 'E', item: 'Panel plate 460 × 350 × 4 mm aluminium', tags: '—',
       spec: '5052-H32 / 6061-T6, R10, anodised, laser-engraved, paint-filled bands', qty: 1, unit: 'ea', vendors: ['LOCAL'], quotes: {} },
@@ -129,8 +131,10 @@
       qty: 1, unit: 'ea', vendors: ['CNF', 'PELI', 'LOCAL'], quotes: {} },
 
     { id: 'bst', s: 'F', item: 'Oxygen booster', tags: 'BST-01',
-      spec: 'USUN XBD30-OL with hoses, drive kit, seal kit; Maximator India as the local alternative',
-      qty: 1, unit: 'ea', vendors: ['USUN', 'MAX'], quotes: {} },
+      spec: 'USUN XBD30-OL with hoses and seal kit; the air-drive filter/regulator is sourced locally. Maximator India as the no-import alternative',
+      qty: 1, unit: 'ea', vendors: ['USUN', 'MAX'],
+      quotes: { USUN: { price: 136880, src: 'quote', lead: null, on: '2026-09-04',
+        note: 'USUN quote PFS-2609-08: USD 1450 DAP India by FedEx — booster 1250, oxygen-clean hose set 120, spare seal kit 80. Converted at ₹94.4/USD on 2026-09-04. Indian customs duty and IGST are on top: DAP does not clear customs. No drive kit and no case offered; GB40-OL-F quoted at USD 2250 for comparison. Seals are UHMWPE, not the PTFE we asked for. Stall curve still not supplied' } } },
     { id: 'reg', s: 'F', item: 'Drive-gas regulator (scuba first stage) and drive cylinder', tags: 'R-01',
       spec: 'own equipment, intermediate pressure set ≈7 bar', qty: 1, unit: 'ea', vendors: ['OWN'], quotes: {} },
 
@@ -143,6 +147,15 @@
   ];
 
   const STATUSES = ['RFQ sent', 'Quoted', 'Ordered', 'Received', 'Not needed'];
+
+  /* Where each RFQ stands, from sourcing/RFQ-LOG.md. A reply is not the same as a quotation:
+     Case N Foam sent model links, Yashtec asked for our GST details first. */
+  const REPLIES = {
+    FAV:  { kind: 'quoted',  on: '2026-09-04', note: 'quoted, and answered the technical follow-up on 2026-09-05; holding the revised quote pending our reply on water testing' },
+    USUN: { kind: 'quoted',  on: '2026-09-04', note: 'quoted USD 1450 DAP India; no stall curve available' },
+    CNF:  { kind: 'partial', on: '2026-09-05', note: 'five models offered with no quotation; prices taken from their catalogue' },
+    YAS:  { kind: 'partial', on: '2026-09-04', note: 'asked for company and GST details before quoting; supplied the same day' },
+  };
 
   const byId = {};
   ITEMS.forEach((i) => { byId[i.id] = i; });
@@ -221,7 +234,7 @@
 
   root.PFS_BOQ = {
     VENDORS: VENDORS, RFQ: RFQ, SECTIONS: SECTIONS, ITEMS: ITEMS, STATUSES: STATUSES, byId: byId,
-    LS_KEY: LS_KEY, localState: localState,
+    REPLIES: REPLIES, LS_KEY: LS_KEY, localState: localState,
     orderQty: orderQty, cheapest: cheapest, defaults: defaults, line: line, lineTotal: lineTotal, summary: summary,
   };
 })(window);

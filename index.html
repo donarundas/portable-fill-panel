@@ -258,12 +258,15 @@
     <details>
       <summary>Open confirmations <span class="hint" id="obHint"></span></summary>
       <div class="body">
-        <ol>
-          <li><strong>FAV FDQRCO2 couplings.</strong> Gas-tightness at 300 bar on helium, seal materials, poppet spring, locking mechanism, cycle life, and the rules for mating and parting. Six sit in the gas path and none of it is published. The fallback is DIN 477 handwheels and a change to the GA.</li>
-          <li><strong>In-house oxygen cleaning procedure.</strong> Written down before the first oxygen fill: disassemble, degrease, FKM and PTFE seals, Krytox, UV inspection. The schedule now depends on standard parts cleaned by hand, and an undocumented step is how a hydrocarbon lubricant survives in a valve.</li>
-          <li><strong>PSV-01 capacity and the booster stall curve.</strong> The relief must pass the XBD30-OL's flow, and the drive set point of about 7 bar is a ratio calculation, not vendor data.</li>
+        <ol id="obList">
+          <li><strong>PI-04 will not close under the lid.</strong> The modelled digital gauge stands 100 mm above the plate and 74 mm is available. No candidate case fixes it. It needs a lower instrument, a recessed mount, or 86 mm standoffs in place of 112 mm. The plate cannot be cut until this is settled.</li>
+          <li><strong>FAV cannot oxygen-clean, and water-tests everything.</strong> Confirmed 2026-09-05: no oxygen cleaning is available and every valve and fitting is hydro-tested with water, with the certificate issued on that basis. The in-house cleaning procedure must now dry as well as degrease, and it has to be written before the first oxygen fill.</li>
+          <li><strong>FAV FDQRCO2 couplings.</strong> Gas-tightness at 300 bar on helium, seal and spring materials, locking mechanism, cycle life, dimensions. Asked twice and still unanswered. Six sit in the gas path; the fallback is DIN 477 handwheels and a change to the GA.</li>
+          <li><strong>Booster stall pressure.</strong> USUN has no flow or stall curve for the XBD30-OL, so the 7 bar drive setting rests on the 30:1 ratio alone. Measure the stall pressure on receipt before the first fill, and confirm PSV-01 can pass the booster's flow.</li>
+          <li><strong>Booster seal compound.</strong> We specified PTFE; USUN supplies UHMWPE. On an oxygen booster the seal compound is what makes it an oxygen booster.</li>
+          <li><strong>Answer FAV on water testing.</strong> They are holding the revised quote — relief valve, hoses, gauge adaptors, digital-gauge bulkhead, tube, FKM kits and the couplings — until we confirm the certification basis is acceptable.</li>
           <li><strong>IS 3224 outlets on the actual cylinders.</strong> Legacy and imported valves are in circulation, and a wrong nut is a dead pigtail set.</li>
-          <li><strong>Case depth.</strong> Check the interior taper against the stack with a cardboard mock-up: the plate sits 30 mm below the rim with 112 mm clear underneath, and the walls narrow towards the floor.</li>
+          <li><strong>Case depth.</strong> Check the interior taper against the stack with a cardboard mock-up, against Case N Foam's EW4920 rather than the Pelican.</li>
           <li><strong>Hole sizes B, C, D and F.</strong> Nominal until the valves, couplings, bulkhead adaptor and vent union are in hand; drill pilot holes until then.</li>
         </ol>
       </div>
@@ -291,6 +294,7 @@
   $('chipBoqS').textContent = `${s.priced} of ${s.lines} lines priced · cheapest vendor on each · incl. GST`;
 
   const pct = (n) => (100 * n / (s.lines - s.skipped)).toFixed(1) + '%';
+  const obCount = document.querySelectorAll('#obList > li').length;   // the panel below is the list; never a second copy of the number
   $('stats').innerHTML = `
     <div class="tile">
       <div class="k">Priced so far</div>
@@ -317,7 +321,7 @@
     </div>
     <div class="tile flag">
       <div class="k">Open confirmations</div>
-      <div class="v">6</div>
+      <div class="v">${obCount}</div>
       <div class="s">to close before parts are bought</div>
     </div>`;
 
@@ -333,16 +337,19 @@
     if (!B.RFQ[v]) return;
     (asked[v] = asked[v] || new Set()).add(it.s);
   }));
-  const replied = new Set();
-  B.ITEMS.forEach((it) => Object.entries(it.quotes || {}).forEach(([v, q]) => { if (q.src === 'quote') replied.add(v); }));
+  const R = B.REPLIES || {};
   const rows = Object.keys(asked).sort((a, b) => B.RFQ[a].localeCompare(B.RFQ[b])).map((v) => {
     const secs = [...asked[v]].sort().join(' · ');
-    const yes = replied.has(v);
+    const r = R[v];
+    const pill = !r ? '<span class="pill wait">awaiting</span>'
+      : r.kind === 'quoted' ? '<span class="pill ok">quoted</span>'
+      : '<span class="pill warn">replied, no price</span>';
     return `<tr><td class="mono">${B.RFQ[v]}</td><td>${B.VENDORS[v]}</td><td>Sections ${secs}</td>
-      <td>${yes ? '<span class="pill ok">quoted</span>' : '<span class="pill wait">awaiting</span>'}</td></tr>`;
+      <td>${pill}${r ? `<div class="s" style="font-size:12px;color:var(--page-muted);margin-top:3px">${r.note}</div>` : ''}</td></tr>`;
   });
   $('rfqRows').innerHTML = rows.join('');
-  $('rfqHint').textContent = `${replied.size} of ${Object.keys(asked).length} have answered`;
+  const quoted = Object.values(R).filter((r) => r.kind === 'quoted').length;
+  $('rfqHint').textContent = `${Object.keys(R).length} of ${Object.keys(asked).length} have replied, ${quoted} with a price`;
 
   /* Section rollup. */
   const secHtml = B.SECTIONS.map((sec) => {
@@ -354,7 +361,7 @@
   });
   $('secRows').innerHTML = secHtml.join('');
   $('secHint').textContent = `${B.SECTIONS.length} groups · ${s.lines} lines`;
-  $('obHint').textContent = 'six, none closed yet';
+  $('obHint').textContent = obCount + ', none closed yet';
 })();
 </script>
 </body>
