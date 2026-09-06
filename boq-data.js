@@ -151,7 +151,7 @@
   /* Where each RFQ stands, from sourcing/RFQ-LOG.md. A reply is not the same as a quotation:
      Case N Foam sent model links, Yashtec asked for our GST details first. */
   const REPLIES = {
-    FAV:  { kind: 'quoted',  on: '2026-09-04', note: 'quoted, and answered the technical follow-up on 2026-09-05; holding the revised quote pending our reply on water testing' },
+    FAV:  { kind: 'quoted',  on: '2026-09-04', note: 'quoted 9 lines; 11 more are still unpriced, the quick disconnects among them — their offer went out an hour before our coupling addendum arrived. Water testing confirmed acceptable on 2026-09-06 and the revised quote chased' },
     USUN: { kind: 'quoted',  on: '2026-09-04', note: 'quoted USD 1450 DAP India; no stall curve available' },
     CNF:  { kind: 'partial', on: '2026-09-05', note: 'five models offered with no quotation; prices taken from their catalogue' },
     YAS:  { kind: 'partial', on: '2026-09-04', note: 'asked for company and GST details before quoting; supplied the same day' },
